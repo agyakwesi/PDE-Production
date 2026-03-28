@@ -14,9 +14,28 @@ const productSchema = new mongoose.Schema({
   rating: { type: Number },
   season: { type: String },
   images: [{ type: String }],
-  isArchive: { type: Boolean, default: false }
+  isArchive: { type: Boolean, default: false },
+  localRetailPrice: { type: Number }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: function(doc, ret) {
+      delete ret.basePrice;
+      return ret;
+    }
+  },
+  toObject: { virtuals: true }
+});
+
+const { getGlobalPrice } = require('../utils/pricing');
+
+productSchema.virtual('savings').get(function() {
+  if (this.localRetailPrice && this.basePrice) {
+    const globalPrice = getGlobalPrice(this.basePrice);
+    return Math.max(0, this.localRetailPrice - globalPrice);
+  }
+  return 0;
 });
 
 module.exports = mongoose.model('Product', productSchema);
