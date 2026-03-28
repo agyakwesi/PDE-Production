@@ -1,8 +1,9 @@
 const Product = require('../models/Product');
+const { getGlobalPrice } = require('../utils/pricing');
 
 const createProduct = async (req, res) => {
   try {
-    const { name, brand, supplierCost, image, description, notes, stockQuantity, category, gender, perfumer, rating, season } = req.body;
+    const { name, brand, supplierCost, localRetailPrice, image, description, notes, stockQuantity, category, gender, perfumer, rating, season } = req.body;
     
     // Convert string notes to an array
     const parsedNotes = notes ? notes.split(',').map(n => n.trim()).filter(n => n.length > 0) : [];
@@ -15,6 +16,7 @@ const createProduct = async (req, res) => {
       images: image ? [image] : [],
       description: description || '',
       stockQuantity: Number(stockQuantity) || 0,
+      localRetailPrice: localRetailPrice ? Number(localRetailPrice) : undefined,
       category: category || 'Niche',
       gender: gender || 'Unisex',
       perfumer: perfumer || '',
@@ -36,7 +38,9 @@ const getProducts = async (req, res) => {
       id: p._id,
       name: p.name,
       brand: p.house,
-      supplierCost: p.basePrice,
+      price: getGlobalPrice(p.basePrice),
+      localRetailPrice: p.localRetailPrice,
+      savings: p.savings,
       stockQuantity: p.stockQuantity || 0,
       category: p.category || 'Niche',
       gender: p.gender || 'Unisex',
@@ -64,7 +68,9 @@ const getProductById = async (req, res) => {
       id: product._id,
       name: product.name,
       brand: product.house,
-      supplierCost: product.basePrice,
+      price: getGlobalPrice(product.basePrice),
+      localRetailPrice: product.localRetailPrice,
+      savings: product.savings,
       description: product.description || 'A rare extrait de parfum curated for the discerning collector.',
       batchTotal: product.moq || 2,
       stockQuantity: product.stockQuantity || 0,
@@ -80,12 +86,13 @@ const getProductById = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    const { name, brand, supplierCost, image, description, notes, stockQuantity, category, gender, perfumer, rating, season } = req.body;
+    const { name, brand, supplierCost, localRetailPrice, image, description, notes, stockQuantity, category, gender, perfumer, rating, season } = req.body;
     
     const updateData = {};
     if (name) updateData.name = name;
     if (brand) updateData.house = brand;
     if (supplierCost) updateData.basePrice = Number(supplierCost);
+    if (localRetailPrice !== undefined) updateData.localRetailPrice = Number(localRetailPrice);
     if (description !== undefined) updateData.description = description;
     if (stockQuantity !== undefined) updateData.stockQuantity = Number(stockQuantity);
     if (category) updateData.category = category;
