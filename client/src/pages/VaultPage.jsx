@@ -49,95 +49,19 @@ const VaultPage = () => {
   const milestone = getMilestoneInfo();
 
   return (
-    <div style={{ padding: '6rem 4rem', display: 'flex', gap: '4rem' }}>
-      
-      <div style={{ flex: 2 }}>
-        <p style={{ color: 'var(--color-primary)', letterSpacing: '0.15em', fontSize: '0.65rem', textTransform: 'uppercase', marginBottom: '1rem' }}>
-          Founder 50 Protocol
-        </p>
-        <h1 style={{ fontSize: '4.5rem', marginBottom: '4rem', fontFamily: 'var(--font-display)' }}>
-          The <span style={{ color: 'var(--color-primary-container)', fontStyle: 'italic' }}>Founder</span> Vault
-        </h1>
+    <div style={{ padding: '6rem 4rem' }}>
+      <h1 style={{ fontSize: '3.5rem', marginBottom: '4rem', fontFamily: 'var(--font-display)' }}>
+        My <span style={{ color: 'var(--color-primary)' }}>Archives</span>
+      </h1>
 
-        {/* Milestone Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ 
-            border: '1px solid var(--color-outline-variant)', 
-            padding: '3rem', 
-            background: 'var(--color-surface-container-low)',
-            marginBottom: '6rem',
-            position: 'relative',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <div style={{ color: 'var(--color-primary)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '1rem' }}>
-                Active Identity
-              </div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', marginBottom: '1rem' }}>
-                {milestone.tier}
-              </h2>
-              <div style={{ 
-                display: 'inline-block',
-                background: 'var(--color-primary)',
-                color: 'var(--color-background)',
-                padding: '0.5rem 1rem',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                marginBottom: '2rem'
-              }}>
-                {milestone.reward}
-              </div>
-              <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.85rem', maxWidth: '400px', lineHeight: 1.6 }}>
-                {milestone.desc}
-              </p>
-            </div>
-
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '0.5rem' }}>Acquisitions</p>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', lineHeight: 1 }}>{totalAcquisitions}</div>
-              
-              {milestone.next && (
-                <div style={{ marginTop: '2rem' }}>
-                  <p style={{ color: 'var(--color-primary)', fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Next: {milestone.next.label}</p>
-                  <div style={{ width: '150px', height: '2px', background: 'rgba(255,255,255,0.05)', marginLeft: 'auto' }}>
-                    <div style={{ width: `${(totalAcquisitions / milestone.next.count) * 100}%`, height: '100%', background: 'var(--color-primary)' }} />
-                  </div>
-                </div>
-              )}
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '4rem' }}>
+        {/* Profile Sidebar */}
+        <div>
+          <div style={{ background: 'var(--color-surface-container-low)', padding: '2rem', border: '1px solid var(--color-outline-variant)' }}>
+            <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.65rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Acquisitions</p>
+            <p style={{ fontSize: '3rem', fontFamily: 'var(--font-display)' }}>{totalAcquisitions}</p>
           </div>
-
-          <div style={{ 
-            marginTop: '3.5rem', 
-            paddingTop: '2.5rem', 
-            borderTop: '1px solid var(--color-outline-variant)',
-            display: 'flex',
-            gap: '3rem'
-          }}>
-            {[
-              { count: 3, label: 'Discovery Perk', active: totalAcquisitions >= 3 },
-              { count: 5, label: '15% Off order', active: totalAcquisitions >= 5 },
-              { count: 10, label: 'Vault Access', active: totalAcquisitions >= 10 }
-            ].map(m => (
-              <div key={m.count} style={{ opacity: m.active ? 1 : 0.3, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ 
-                  width: '18px', height: '18px', borderRadius: '50%', border: `1px solid ${m.active ? 'var(--color-primary)' : 'var(--color-on-surface-variant)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--color-primary)'
-                }}>
-                  {m.active ? '✓' : ''}
-                </div>
-                <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                   {m.count}: {m.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        </div>
 
         {/* My Collection */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '3rem' }}>

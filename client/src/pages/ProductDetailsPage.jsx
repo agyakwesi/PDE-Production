@@ -5,7 +5,6 @@ import ScentNotesReveal from '../components/ScentNotesReveal';
 import { useParams, useNavigate } from 'react-router-dom';
 import { calculateRetailGHS, formatGHS, calculateBatchProgress } from '../utils/pricingEngine';
 import useCart from '../utils/useCart';
-import TransparencyWidget from '../components/TransparencyWidget';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -32,7 +31,7 @@ const ProductDetailsPage = () => {
   if (loading) return <div style={{ padding: '6rem', textAlign: 'center', color: 'var(--color-primary)' }}>Accessing Archives...</div>;
   if (!product) return <div style={{ padding: '6rem', textAlign: 'center', color: 'var(--color-on-surface-variant)' }}>Reference not found in vault.</div>;
 
-  const retailGHS = calculateRetailGHS(product.officialMSRP);
+  const retailGHS = calculateRetailGHS(product.supplierCost);
   const progress = calculateBatchProgress(product.batchTotal, 3000);
 
   return (
@@ -69,21 +68,12 @@ const ProductDetailsPage = () => {
             }} 
             onError={(e) => { e.target.src = '/images/bottle_1.png' }}
           />
-
-          <TransparencyWidget 
-            officialMSRP={product.officialMSRP} 
-            localRetailGHS={product.localRetailGHS} 
-          />
         </div>
 
         <div style={{ padding: '6rem 4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)' }}>
-            <span>Oud Vlog</span>
-            <span style={{ color: 'var(--color-outline-variant)' }}>—</span>
-            <span>Exclusive Oud</span>
-            <span style={{ color: 'var(--color-outline-variant)' }}>—</span>
-            <span style={{ color: 'var(--color-primary)' }}>{product.brand}</span>
+            <span>{product.brand}</span>
           </div>
 
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '4.5rem', lineHeight: 1.1, marginBottom: '2rem' }}>
@@ -102,31 +92,18 @@ const ProductDetailsPage = () => {
             backdropFilter: 'blur(var(--glass-blur))'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Community Batch Status</span>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Batch Status</span>
               <span style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)' }}>{Math.round(progress)}%</span>
             </div>
             <div style={{ width: '100%', height: '2px', background: 'var(--color-surface-container-highest)', marginBottom: '1.5rem' }}>
               <div style={{ width: `${progress}%`, height: '100%', background: 'var(--color-primary)' }} />
             </div>
-            
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <div style={{ color: 'var(--color-primary)' }}>ℹ</div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
-                1 more piece required from you, or until overall batch reaches 100%. Estimated fulfillment: 12 days.
-              </p>
-            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '3rem', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--color-primary)', marginBottom: '0.5rem' }}>
-                Anti-Cheat Locked Price
-              </div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '3.5rem', lineHeight: 0.9 }}>
                 {formatGHS(retailGHS)}
-              </div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginTop: '0.75rem' }}>
-                Inc. Global Logistics & Duty
               </div>
             </div>
 
@@ -138,12 +115,12 @@ const ProductDetailsPage = () => {
                   name: product.name,
                   brand: product.brand,
                   image: product.image,
-                  officialMSRP: product.officialMSRP,
+                  supplierCost: product.supplierCost,
                 });
                 navigate('/cart');
               }}
             >
-              Secure Initial Allocation
+              Secure Allocation
             </Button>
           </div>
 

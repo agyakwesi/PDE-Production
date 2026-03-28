@@ -30,7 +30,6 @@ const buildPyramid = (notesStr) => {
   };
 };
 
-import ProductCard from '../components/ProductCard';
 
 const CatalogPage = () => {
   const navigate = useNavigate();
@@ -101,14 +100,42 @@ const CatalogPage = () => {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
         gap: '2.75rem'
       }}>
-        {products.map((product, i) => (
-          <ProductCard 
-            key={product.id} 
-            product={product} 
-            index={i} 
-            onClick={() => navigate(`/catalog/${product.id}`)} 
-          />
-        ))}
+        {products.map((product, i) => {
+          const retailGHS = calculateRetailGHS(product.supplierCost);
+          return (
+            <motion.div
+              key={product._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(`/catalog/${product._id}`)}
+              style={{
+                background: 'var(--color-surface-container-low)',
+                padding: '2rem',
+                cursor: 'pointer',
+                border: '1px solid transparent',
+                transition: 'border-color 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
+            >
+              <div style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', background: 'var(--color-surface-container-lowest)' }}>
+                <img 
+                  src={product.image || `/images/bottle_1.png`} 
+                  alt={product.name} 
+                  style={{ width: '70%', height: '70%', objectFit: 'contain' }} 
+                  onError={(e) => { e.target.src = '/images/bottle_1.png' }}
+                />
+              </div>
+              <p style={{ color: 'var(--color-primary)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>{product.brand}</p>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>{product.name}</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '1.5rem', fontWeight: 600 }}>{formatGHS(retailGHS)}</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>{product.stockQuantity > 0 ? 'Batch Open' : 'Filling Soon'}</span>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
       )}
 
