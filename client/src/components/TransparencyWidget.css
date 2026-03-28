@@ -1,0 +1,100 @@
+.transparency-widget {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2rem;
+  color: var(--color-primary);
+  margin-bottom: 2.5rem;
+}
+
+.widget-header .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--color-primary-container);
+}
+
+.price-comparison-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.price-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-row .label {
+  font-size: 0.6rem;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+
+.price-row .value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-on-surface);
+}
+
+.price-row .value.strike {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.price-row .meta {
+  font-size: 0.55rem;
+  color: var(--color-on-surface-variant);
+  text-transform: lowercase;
+  opacity: 0.7;
+}
+
+.price-row .meta.danger {
+  color: #ff4444;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-outline-variant);
+  margin: 0.5rem 0;
+}
+
+.price-row.highlight .value {
+  color: var(--color-primary-light);
+  font-size: 2rem;
+}
+
+.savings-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-outline-variant);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.savings-footer .gold-text {
+  color: var(--color-primary-light);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.savings-footer .meta {
+  font-size: 0.6rem;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

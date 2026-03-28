@@ -1,0 +1,184 @@
+/* ─── Scent Notes Hover-to-Reveal ─── */
+
+.scent-notes-section {
+  padding: 8rem 4rem;
+  text-align: center;
+  background: var(--color-surface);
+}
+
+.scent-notes-section__title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.scent-notes-section__subtitle {
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 5rem;
+}
+
+.scent-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ─── Individual Card ─── */
+.scent-note-card {
+  border: 1px solid var(--color-outline-variant);
+  padding: 3.5rem 2rem;
+  cursor: pointer;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 280px;
+  position: relative;
+}
+
+.scent-note-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 30px rgba(242, 202, 80, 0.06);
+}
+
+/* ─── Card Icon ─── */
+.scent-note-card__icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.scent-note-card:hover .scent-note-card__icon {
+  opacity: 0;
+}
+
+.scent-note-card__icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--color-primary);
+  fill: none;
+  stroke-width: 1;
+}
+
+/* ─── Card Label ─── */
+.scent-note-card__label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-on-surface);
+  margin-bottom: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.scent-note-card:hover .scent-note-card__label {
+  opacity: 0;
+}
+
+/* ─── "Hover to Reveal" hint ─── */
+.scent-note-card__hint {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-on-surface-variant);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  bottom: 3rem;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.scent-note-card:hover .scent-note-card__hint {
+  opacity: 0;
+}
+
+/* ─── Revealed Notes ─── */
+.scent-note-card__notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.45s ease 0.1s, transform 0.45s ease 0.1s;
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  right: 2rem;
+  transform: translateY(-50%) translateY(10px);
+  text-align: center;
+}
+
+.scent-note-card:hover .scent-note-card__notes {
+  opacity: 1;
+  transform: translateY(-50%) translateY(0);
+}
+
+.scent-note-card__notes li {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  line-height: 2.2;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Mobile: tap to toggle ─── */
+.scent-note-card.is-revealed .scent-note-card__hint {
+  opacity: 0;
+}
+
+.scent-note-card.is-revealed .scent-note-card__notes {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scent-note-card.is-revealed {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 30px rgba(242, 202, 80, 0.06);
+}
+
+.scent-note-card.is-revealed .scent-note-card__icon {
+  opacity: 0;
+}
+
+.scent-note-card.is-revealed .scent-note-card__label {
+  opacity: 0;
+}
+
+.scent-note-card.is-revealed .scent-note-card__notes {
+  opacity: 1;
+  transform: translateY(-50%) translateY(0);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .scent-notes-section {
+    padding: 5rem 2rem;
+  }
+
+  .scent-notes-section__title {
+    font-size: 2rem;
+  }
+
+  .scent-notes-section__subtitle {
+    margin-bottom: 3rem;
+  }
+
+  .scent-notes-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .scent-note-card {
+    min-height: 200px;
+    padding: 2.5rem 1.5rem;
+  }
+}

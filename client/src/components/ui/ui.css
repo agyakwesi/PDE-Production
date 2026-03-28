@@ -1,0 +1,71 @@
+/* Custom UI Component Classes */
+
+/* Button Hover Effects */
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: var(--ambient-bloom);
+}
+
+.btn-secondary:hover {
+  background: rgba(242, 202, 80, 0.1);
+  border-color: var(--color-primary);
+}
+
+.btn-tertiary {
+  overflow: visible !important;
+}
+
+.btn-tertiary::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.btn-tertiary:hover::after {
+  width: 100%;
+}
+
+/* Custom Input Styles */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.input-label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-on-surface-variant);
+}
+
+.custom-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.75rem 0;
+  outline: none;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+
+.custom-input:focus, .custom-input.focused {
+  border-bottom-color: var(--color-primary);
+  background: var(--color-surface-container-highest);
+  padding-left: 0.5rem;
+}
+
+.custom-input::placeholder {
+  color: var(--color-outline-variant);
+}
