@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String },
   purchaseCount: { type: Number, default: 0 },
-  founderStatus: { type: Boolean, default: false }
+  founderStatus: { type: Boolean, default: false },
+  rewards: [{ type: String }]
 }, {
   timestamps: true
 });
