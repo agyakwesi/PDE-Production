@@ -1,57 +1,37 @@
+const axios = require('axios');
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const { callAI } = require('../services/aiHelpers');
 
 // Groq SDK is now handled in aiHelpers.js via callAI
 
-exports.scrapeFragrantica = async (req, res) => {
-  const { url } = req.body;
+// Scrape a single URL (internal function)
+const performScrape = async (url) => {
   if (!url || !url.includes('fragrantica.com')) {
-    return res.status(400).json({ error: "Invalid URL" });
+    throw new Error("Invalid URL");
   }
 
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu"
+    ]
+  });
+  
   try {
-    // Launch Puppeteer with args for Render/Production compatibility
-    const browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--disable-gpu"
-      ]
-    });
-    
     const page = await browser.newPage();
-    
-    // Set a realistic User Agent
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     
-    // Disable request interception to ensure full page load (fixes missing elements)
-    // await page.setRequestInterception(true); 
-    
-    try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
-        
-        // Scroll down to trigger lazy-loaded elements (accords, notes, etc.)
-        await page.evaluate(() => window.scrollBy(0, 1500));
-        await new Promise(r => setTimeout(r, 2000));
-        await page.evaluate(() => window.scrollBy(0, 1500));
-        await new Promise(r => setTimeout(r, 1500));
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.evaluate(() => window.scrollBy(0, 1000));
+    await new Promise(r => setTimeout(r, 1000));
 
-        // Try multiple selectors for the name
-        try {
-          await page.waitForSelector('h1[itemprop="name"], h1, .perfume-name', { timeout: 15000 });
-        } catch(e) {
-          console.log("Name selector timeout, will attempt extraction anyway...");
-        }
-    } catch (e) {
-        console.log("Navigation timeout, continuing with partial content...");
-    }
-    
     const content = await page.content();
     const $ = cheerio.load(content);
 
@@ -65,114 +45,110 @@ exports.scrapeFragrantica = async (req, res) => {
     if (titleText.includes("for women")) gender = "Female";
     if (titleText.includes("for men") && !titleText.includes("for women")) gender = "Male";
 
-    // Pyramid Extraction
     let notes = "";
     const pyramidDivs = $('div[style*="flex-flow: wrap"][style*="justify-content: center"]');
-    
     if (pyramidDivs.length >= 3) {
-        // Assuming standard order: Top, Middle, Base
         const getNotesFromDiv = (div) => {
             const notesArr = [];
             $(div).find('div').each((i, el) => {
                 const text = $(el).text().trim();
                 if (text) notesArr.push(text);
             });
-            // Filter duplicates and empty
             return [...new Set(notesArr)].filter(n => n.length > 1);
         };
-
         const top = getNotesFromDiv(pyramidDivs.eq(0));
         const middle = getNotesFromDiv(pyramidDivs.eq(1));
         const base = getNotesFromDiv(pyramidDivs.eq(2));
-
         if (top.length || middle.length || base.length) {
             notes = `Top: ${top.join(', ')}; Heart: ${middle.join(', ')}; Base: ${base.join(', ')}`;
         }
     }
 
-    // Always extract Accords using in-page JS (Fragrantica uses Tailwind now, old .accord-bar is dead)
     let accords = '';
     try {
       const accordsData = await page.evaluate(() => {
-        // Find the "main accords" h6 header
         const headers = Array.from(document.querySelectorAll('h6'));
         const accordHeader = headers.find(el => el.textContent.trim().toLowerCase() === 'main accords');
         if (!accordHeader) return [];
-        
-        // The accords container is the next sibling
         const container = accordHeader.nextElementSibling;
         if (!container) return [];
-        
         const spans = container.querySelectorAll('.truncate');
         return Array.from(spans).map(s => s.textContent.trim()).filter(t => t.length > 0);
       });
       accords = accordsData.join(', ');
-      console.log("Extracted accords:", accords);
-    } catch(accErr) {
-      console.warn("Accords extraction failed:", accErr.message);
-    }
+    } catch(accErr) {}
 
-    // Fallback: if pyramid notes are empty, use accords
-    if (!notes && accords) {
-      notes = accords;
-    }
-    
-    // Enhanced perfumer extraction
-    let perfumer = "Master Perfumer";
-    const perfumerSelectors = [
-      'div[itemprop="brand"] a',
-      '.perfumer-avatar + a',
-      'a[href*="/noses/"]',
-      'div:contains("Perfumer:") + a',
-      'p:contains("Nose:") a'
-    ];
-    
-    for (const selector of perfumerSelectors) {
-      const found = $(selector).first().text().trim();
-      if (found && found.length > 0 && found !== "Master Perfumer") {
-        perfumer = found;
-        break;
-      }
-    }
+    if (!notes && accords) notes = accords;
 
-    // AI Description Shortening
-    if (description && description.length > 200) {
-      try {
-        let cleanDesc = description
-          .replace(/Sponsored.*/i, "")
-          .replace(/Read about this perfume.*/i, "")
-          .replace(/Jomashop.*/i, "")
-          .trim();
-
-        const systemPrompt = "You are a luxury perfume copywriter. Shorten perfume descriptions to 2-3 elegant sentences (max 150 words). Remove unnecessary details, keep only the essence, mood, and key notes. Be poetic but concise.";
-        const userMessage = `Shorten this perfume description:\n\n${cleanDesc}`;
-        
-        const aiResponse = await callAI(systemPrompt, userMessage, 0.7, 200);
-        description = aiResponse || cleanDesc;
-      } catch (aiError) {
-        console.error("AI description shortening failed:", aiError);
-        description = description.substring(0, 200) + '...';
-      }
-    }
-
-    // Brand Extraction from URL (Reliable)
     let brand = "Unknown";
     try {
       const urlParts = url.split('/perfume/')[1].split('/');
       if (urlParts.length >= 1) {
-        brand = urlParts[0].replace(/-/g, ' '); 
-        brand = brand.replace(/\b\w/g, l => l.toUpperCase());
+        brand = urlParts[0].replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       }
-    } catch (e) {
-      console.log("Could not extract brand from URL");
-    }
+    } catch (e) {}
 
-    const data = { name, brand, image, description, notes, accords, perfumer, rating, gender };
-
+    return { name, brand, image, description, notes, accords, rating, gender, url };
+  } finally {
     await browser.close();
+  }
+};
+
+exports.scrapeFragrantica = async (req, res) => {
+  try {
+    const data = await performScrape(req.body.url);
     res.json(data);
   } catch (error) {
-    console.error("Scraping Error:", error);
-    res.status(500).json({ error: "Failed to scrape data" });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.discoverySearch = async (req, res) => {
+  const { query } = req.body;
+  if (!query) return res.status(400).json({ error: "Query is required" });
+
+  try {
+    const response = await axios.post('https://google.serper.dev/search', {
+      q: `site:fragrantica.com/perfume ${query}`,
+      num: 5
+    }, {
+      headers: {
+        'X-API-KEY': process.env.SERPER_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const results = response.data.organic
+      .filter(item => item.link.includes('fragrantica.com/perfume/'))
+      .map(item => ({
+        title: item.title,
+        link: item.link,
+        snippet: item.snippet
+      }));
+
+    res.json(results);
+  } catch (error) {
+    console.error("Serper Error:", error.message);
+    res.status(500).json({ error: "Search failed" });
+  }
+};
+
+exports.bulkScrape = async (req, res) => {
+  const { urls } = req.body;
+  if (!urls || !Array.isArray(urls)) return res.status(400).json({ error: "URLs array required" });
+
+  try {
+    const results = [];
+    for (const url of urls) {
+      try {
+        const data = await performScrape(url);
+        results.push({ url, status: 'success', data });
+      } catch (err) {
+        results.push({ url, status: 'error', message: err.message });
+      }
+    }
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ error: "Bulk operation failed" });
   }
 };

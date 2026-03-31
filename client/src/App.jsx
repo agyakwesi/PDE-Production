@@ -10,6 +10,7 @@ import CartPage from './pages/CartPage';
 import VaultPage from './pages/VaultPage';
 import AdminPage from './pages/AdminPage';
 import VerifyPage from './pages/VerifyPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="catalog/:id" element={<ProductDetailsPage />} />
           <Route path="cart" element={<CartPage />} />
+          <Route path="order-success" element={<OrderSuccessPage />} />
           <Route path="vault" element={<VaultPage />} />
           <Route path="admin" element={<AdminPage />} />
         </Route>

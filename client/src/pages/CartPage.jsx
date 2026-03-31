@@ -1,49 +1,150 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useCart from '../utils/useCart';
 import { useAuth } from '../context/AuthContext';
-import { calculateRetailGHS, calculateLandedUSD, formatGHS, FIXED_RATE } from '../utils/pricingEngine';
+import { calculateRetailGHS, formatGHS } from '../utils/pricingEngine';
 import './CartPage.css';
-
-const PAYSTACK_LIMIT_GHS = 30000;
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
   const [toast, setToast] = useState(null);
+  const [useMoMo, setUseMoMo] = useState(false);
 
-  // ── Pricing calculations ──
-  const lineItems = cart.map((item) => {
+  // Constants
+  const shipping = 0; // Shipping is inclusive in the retail price as per pricingEngine
+
+  // Calculations
+  const subtotal = cart.reduce((acc, item) => {
+    const price = calculateRetailGHS(item.supplierCost);
+    return acc + (price * item.quantity);
+  }, 0);
+
+  const total = subtotal + shipping;
+
+  const lineItems = cart.map(item => {
     const unitPrice = calculateRetailGHS(item.supplierCost);
-    return { ...item, unitPrice, lineTotal: unitPrice * item.quantity };
+    return {
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+      price: unitPrice,
+      lineTotal: unitPrice * item.quantity
+    };
   });
 
-  const subtotal = lineItems.reduce((sum, li) => sum + li.lineTotal, 0);
-  const shipping = 0;
-  const total = subtotal + shipping;
-  const useMoMo = total >= PAYSTACK_LIMIT_GHS;
+  const handleCheckout = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
 
-  // ... (copyProductLink and getMoqStatus unchanged)
+    if (cart.length === 0) return;
 
-  // ─────────────────────────────────────────────
-  //  EMPTY STATE
-  // ... (unchanged)
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          items: lineItems,
+          paymentMethod: useMoMo ? 'MoMo' : 'Paystack',
+          totalAmount: total
+        })
+      });
 
-  // ─────────────────────────────────────────────
-  //  MAIN CART
-  // ... (unchanged)
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Checkout failed');
 
-  // ─────────────────────────────────────────────
-  //  SUMMARY SIDEBAR
-  // ─────────────────────────────────────────────
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      } else {
+        // If no redirect URL, maybe it's a manual process or failure
+        throw new Error('Payment initialization failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setToast(err.message || 'Error occurred during allocation');
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const copyProductLink = (id) => {
+    const url = `${window.location.origin}/catalog/${id}`;
+    navigator.clipboard.writeText(url);
+    setToast('Link copied to clipboard');
+    setTimeout(() => setToast(null), 2000);
+  };
+
+  if (cart.length === 0) {
+    return (
+      <div className="cart-page">
+        <div className="cart-empty">
+          <div className="cart-empty__icon">∅</div>
+          <h1 className="cart-empty__title">Your Vault is Empty</h1>
+          <p className="cart-empty__text">
+            No allocations currently reserved. Explore the catalog to secure your seasonal staples.
+          </p>
+          <Link to="/catalog" className="vault-link" style={{ textDecoration: 'none', border: '1px solid #C5A059', padding: '1rem 2rem' }}>
+            Browse Catalog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cart-page">
-      {/* ... (h1 and subtitle unchanged) */}
+      <h1 className="cart-page__title">Your Selection</h1>
+      <p className="cart-page__subtitle">Review your curated inventory for the upcoming batch.</p>
       
       <div className="cart-layout">
-        {/* ... (cart-items list unchanged) */}
+        <div className="cart-items">
+          {cart.map((item) => (
+            <div key={item.productId} className="cart-item">
+              <div className="cart-item__image-wrap">
+                <img 
+                  src={item.image || item.images?.[0] || '/images/bottle_1.png'} 
+                  alt={item.name} 
+                  className="cart-item__image" 
+                  referrerPolicy="no-referrer"
+                  onError={(e) => { 
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/images/bottle_1.png';
+                  }}
+                />
+              </div>
+              <div className="cart-item__details">
+                <div>
+                  <span className="cart-item__brand">{item.brand}</span>
+                  <h3 className="cart-item__name">{item.name}</h3>
+                  <span className="cart-item__price">
+                    {formatGHS(calculateRetailGHS(item.supplierCost))}
+                  </span>
+                </div>
+                
+                <div className="cart-item__actions">
+                  <div className="qty-controls">
+                    <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>-</button>
+                    <span className="qty-value">{item.quantity}</span>
+                    <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>+</button>
+                  </div>
+                  <button className="remove-btn" onClick={() => removeFromCart(item.productId)}>Remove</button>
+                  <button className="share-btn" onClick={() => copyProductLink(item.productId)}>Share Link</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="cart-summary">
           <h3 className="cart-summary__heading">Order Summary</h3>
@@ -67,21 +168,14 @@ const CartPage = () => {
             <span className="summary-total__value">{formatGHS(total)}</span>
           </div>
 
-          {/* Dynamic Checkout Button */}
           <button
             className={`checkout-btn ${useMoMo ? 'checkout-btn--momo' : ''}`}
-            onClick={() =>
-              alert(
-                useMoMo
-                  ? 'Redirecting to Direct MoMo reservation...'
-                  : 'Redirecting to Paystack checkout...'
-              )
-            }
+            disabled={isProcessing}
+            onClick={handleCheckout}
           >
-            {useMoMo ? 'Reserve via Direct MoMo' : 'Pay with Paystack'}
+            {isProcessing ? 'Processing Allocation...' : 'Pay with Paystack'}
           </button>
 
-          {/* Trust Signals */}
           <div className="trust-signals">
             <div className="trust-item">
               <span className="trust-item__icon" />
@@ -94,7 +188,6 @@ const CartPage = () => {
         </div>
       </div>
 
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div

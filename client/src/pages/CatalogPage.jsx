@@ -1,35 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { calculateRetailGHS, formatGHS } from '../utils/pricingEngine';
-
-// High-demand luxury brands that get the prestige badge
-const LUXURY_HOUSES = [
-  'creed', 'maison francis kurkdjian', 'mfk', 'baccarat', 'tom ford',
-  'xerjoff', 'amouage', 'parfums de marly', 'pdm', 'roja', 'clive christian',
-  'initio', 'nishane', 'byredo', 'le labo', 'kilian', 'memo'
-];
-
-const isLuxuryBrand = (brand) => {
-  if (!brand) return false;
-  const lower = brand.toLowerCase();
-  return LUXURY_HOUSES.some(h => lower.includes(h));
-};
-
-// Split notes into a scent pyramid (Top → Heart → Base)
-const buildPyramid = (notesStr) => {
-  if (!notesStr) return null;
-  const all = notesStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
-  if (all.length === 0) return null;
-  
-  const third = Math.max(1, Math.ceil(all.length / 3));
-  return {
-    top: all.slice(0, third),
-    heart: all.slice(third, third * 2),
-    base: all.slice(third * 2)
-  };
-};
-
+import ProductCard from '../components/ProductCard';
+import LoadingScreen from '../components/LoadingScreen';
 
 const CatalogPage = () => {
   const navigate = useNavigate();
@@ -52,44 +25,80 @@ const CatalogPage = () => {
   }, []);
 
   return (
-    <div style={{ padding: '6rem 4rem' }}>
+    <div style={{ padding: '6rem 4rem', maxWidth: '1400px', margin: '0 auto' }}>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
-        <div style={{ maxWidth: '600px' }}>
-          <h1 style={{ fontSize: '4.5rem', lineHeight: 1, marginBottom: '1.5rem', textTransform: 'uppercase' }}>
-            The Curated<br/>
-            <span style={{ color: 'var(--color-primary)' }}>Inventory</span>
-          </h1>
-          <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '1rem', lineHeight: 1.6 }}>
-            Access rare extraits and signature scents sourced directly from verified ateliers. Each reference is subject to architectural validation and rarity checks.
-          </p>
-        </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem' }}>
-          <div style={{ display: 'flex', border: '1px solid var(--color-outline-variant)' }}>
+      {/* Centered Header Section */}
+      <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
+        <h1 style={{ 
+          fontSize: '4.5rem', 
+          fontFamily: 'var(--font-display)', 
+          textTransform: 'uppercase', 
+          color: 'var(--color-on-background)',
+          marginBottom: '1rem',
+          letterSpacing: '-0.02em',
+          fontWeight: 400
+        }}>
+          THE CURATED INVENTORY
+        </h1>
+        <p style={{ 
+          color: 'var(--color-on-surface)', 
+          fontSize: '1rem', 
+          lineHeight: 1.6,
+          maxWidth: '600px',
+          margin: '0 auto 3rem auto'
+        }}>
+          Access rare extracts and signature scents sourced directly from verified ateliers.<br/>
+          Each reference is subject to architectural validation and rarity checks.
+        </p>
+
+        {/* Pill Toggle Switch */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            border: '1px solid var(--color-outline)', 
+            borderRadius: '100px',
+            overflow: 'hidden'
+          }}>
             <button style={{ 
-              background: 'var(--color-primary)', color: 'var(--color-background)', 
-              padding: '0.75rem 1.5rem', border: 'none', 
-              fontFamily: 'var(--font-body)', fontSize: '0.75rem', textTransform: 'uppercase', 
-              fontWeight: 600, letterSpacing: '0.05em'
+              background: 'var(--color-on-background)', 
+              color: 'var(--color-background)', 
+              padding: '0.6rem 2rem', 
+              border: 'none', 
+              fontFamily: 'var(--font-body)', 
+              fontSize: '0.75rem', 
+              textTransform: 'uppercase', 
+              fontWeight: 600, 
+              letterSpacing: '0.05em',
+              cursor: 'pointer'
             }}>Full Bottles</button>
             <button style={{ 
-              background: 'transparent', color: 'var(--color-on-surface-variant)', 
-              padding: '0.75rem 1.5rem', border: 'none', 
-              fontFamily: 'var(--font-body)', fontSize: '0.75rem', textTransform: 'uppercase', 
-              fontWeight: 600, letterSpacing: '0.05em', cursor: 'pointer'
+              background: 'transparent', 
+              color: 'var(--color-on-surface-variant)', 
+              padding: '0.6rem 2rem', 
+              border: 'none', 
+              fontFamily: 'var(--font-body)', 
+              fontSize: '0.75rem', 
+              textTransform: 'uppercase', 
+              fontWeight: 600, 
+              letterSpacing: '0.05em', 
+              cursor: 'pointer'
             }}>Original Vials</button>
           </div>
-          <p style={{ color: 'var(--color-primary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            Showing {products.length} References
-          </p>
         </div>
+
+        <p style={{ 
+          color: 'var(--color-on-surface-variant)', 
+          fontSize: '0.75rem', 
+          textTransform: 'uppercase', 
+          letterSpacing: '0.05em',
+          fontWeight: 700
+        }}>
+          SHOWING {products.length} REFERENCES
+        </p>
       </div>
 
       {loading ? (
-        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          Accessing Vault...
-        </div>
+        <LoadingScreen message="Accessing Vault..." />
       ) : products.length === 0 ? (
         <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--color-on-surface-variant)' }}>
           The vault is currently empty. Waiting for administrative curation.
@@ -97,61 +106,47 @@ const CatalogPage = () => {
       ) : (
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-        gap: '2.75rem'
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+        gap: '2rem 4rem',
+        justifyItems: 'center'
       }}>
-        {products.map((product, i) => {
-          const retailGHS = calculateRetailGHS(product.supplierCost);
-          return (
-            <motion.div
-              key={product._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => navigate(`/catalog/${product._id}`)}
-              style={{
-                background: 'var(--color-surface-container-low)',
-                padding: '2rem',
-                cursor: 'pointer',
-                border: '1px solid transparent',
-                transition: 'border-color 0.3s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
-            >
-              <div style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', background: 'var(--color-surface-container-lowest)' }}>
-                <img 
-                  src={product.image || `/images/bottle_1.png`} 
-                  alt={product.name} 
-                  style={{ width: '70%', height: '70%', objectFit: 'contain' }} 
-                  onError={(e) => { e.target.src = '/images/bottle_1.png' }}
-                />
-              </div>
-              <p style={{ color: 'var(--color-primary)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>{product.brand}</p>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>{product.name}</h3>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: 600 }}>{formatGHS(retailGHS)}</span>
-                <span style={{ fontSize: '0.65rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase' }}>{product.stockQuantity > 0 ? 'Batch Open' : 'Filling Soon'}</span>
-              </div>
-            </motion.div>
-          );
-        })}
+        {products.map((product, i) => (
+          <ProductCard 
+            key={product._id || product.id}
+            product={product}
+            index={i}
+            onClick={() => navigate(`/catalog/${product._id || product.id}`)}
+          />
+        ))}
       </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}>
+      {/* Footer Wide Button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6rem' }}>
         <button style={{
           background: 'transparent',
-          border: '1px solid var(--color-outline-variant)',
-          color: 'var(--color-on-surface)',
-          padding: '1rem 3rem',
+          border: '1px solid var(--color-on-background)',
+          color: 'var(--color-on-background)',
+          padding: '1.25rem',
           fontFamily: 'var(--font-body)',
-          fontSize: '0.75rem',
+          fontSize: '0.85rem',
           textTransform: 'uppercase',
           letterSpacing: '0.1em',
-          cursor: 'pointer'
+          fontWeight: 600,
+          cursor: 'pointer',
+          width: '100%',
+          maxWidth: '1200px',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'var(--color-on-background)';
+          e.currentTarget.style.color = 'var(--color-background)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.color = 'var(--color-on-background)';
         }}>
-          Expand Archives
+          EXPAND ARCHIVES
         </button>
       </div>
 

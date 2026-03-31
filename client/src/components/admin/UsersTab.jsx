@@ -7,7 +7,10 @@ const UsersTab = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/api/users');
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         const data = await res.json();
         setUsers(data || []);
       } catch (err) {
@@ -17,8 +20,23 @@ const UsersTab = () => {
     fetchUsers();
   }, []);
 
-  const toggleFounder = (id) => {
-    setUsers(users.map(u => u._id === id ? { ...u, isFounder: !u.isFounder } : u));
+  const toggleFounder = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/toggle-founder', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId })
+      });
+      if (res.ok) {
+        setUsers(users.map(u => u._id === userId ? { ...u, founderStatus: !u.founderStatus } : u));
+      }
+    } catch (err) {
+      console.error("Failed to toggle status:", err);
+    }
   };
 
   return (
@@ -46,8 +64,8 @@ const UsersTab = () => {
             <button 
               onClick={() => toggleFounder(user._id)}
               style={{
-                background: user.isFounder ? 'var(--color-primary)' : 'transparent',
-                color: user.isFounder ? 'var(--color-surface)' : 'var(--color-primary)',
+                background: user.founderStatus ? 'var(--color-primary)' : 'transparent',
+                color: user.founderStatus ? 'var(--color-surface)' : 'var(--color-primary)',
                 border: '1px solid var(--color-primary)',
                 padding: '0.5rem 1rem',
                 fontFamily: 'var(--font-body)',
@@ -58,7 +76,7 @@ const UsersTab = () => {
                 transition: 'all 0.3s'
               }}
             >
-              {user.isFounder ? 'Revoke Founder' : 'Grant Founder'}
+              {user.founderStatus ? 'Revoke Founder' : 'Grant Founder'}
             </button>
           </div>
         </div>

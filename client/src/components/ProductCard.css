@@ -1,137 +1,98 @@
-.editorial-card {
-  position: relative;
-  background: var(--color-surface-container-low);
-  height: 500px;
-  cursor: pointer;
-  overflow: hidden;
+.minimal-product-card {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 2.5rem;
-  transition: background 0.4s ease;
-  border: 1px solid var(--color-outline-variant);
-}
-
-.editorial-card:hover {
-  background: var(--color-surface-container-highest);
-  border-color: var(--color-primary-container);
-}
-
-/* Overlapping Background Typography */
-.card-bg-brand {
-  position: absolute;
-  top: 10%;
-  left: -5%;
-  font-family: var(--font-display);
-  font-size: 8rem;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.03);
-  text-transform: uppercase;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 1;
-  line-height: 0.8;
-}
-
-/* Floating Bottle Styles */
-.bottle-container {
-  position: absolute;
-  top: 10%;
-  left: 0;
-  width: 100%;
-  height: 60%;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 2;
-  padding: 2rem;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  padding: 1rem;
 }
 
-.floating-bottle {
-  max-width: 80%;
+.minimal-bottle-container {
+  width: 100%;
+  height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.minimal-bottle {
+  max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+  transition: filter 0.5s ease;
 }
 
-/* Info Section */
-.card-info {
-  position: relative;
-  z-index: 3;
+.minimal-product-card:hover .minimal-bottle {
+  filter: drop-shadow(0 25px 40px rgba(0,0,0,0.2));
 }
 
-.product-name {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  margin: 0;
-  margin-bottom: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
+.minimal-badge-container {
+  margin-bottom: 1.5rem;
 }
 
-.brand-label {
-  color: var(--color-primary);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  margin: 0;
-  margin-bottom: 2rem;
-}
-
-.card-pricing {
-  margin-bottom: 2rem;
-}
-
-.pricing-meta {
+.minimal-badge {
+  display: inline-block;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 100px;
+  padding: 0.35rem 0.85rem;
   font-size: 0.55rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--color-on-surface-variant);
-  margin-bottom: 0.4rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
-.price-value {
+.minimal-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.minimal-brand {
+  font-family: var(--font-body);
+  color: var(--color-on-surface-variant);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  margin: 0;
+}
+
+.minimal-name {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.75rem;
+  line-height: 1.1;
+  color: var(--color-on-surface);
+  margin: 0;
+  max-width: 90%;
+  letter-spacing: -0.01em;
+}
+
+.minimal-pricing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.minimal-price-value {
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 500;
   color: var(--color-on-surface);
   line-height: 1;
 }
 
-.transparency-tag {
-  font-size: 0.5rem;
-  color: var(--color-primary-container);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 0.5rem;
-}
-
-.card-status {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.65rem;
+.minimal-price-label {
+  font-size: 0.55rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-on-surface-variant);
-  border-top: 1px solid var(--color-outline-variant);
-  padding-top: 1.5rem;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.status-dot.in-stock { background: var(--color-primary); }
-.status-dot.out-of-stock { background: #444; }
-
-.card-hover-accent {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: var(--color-primary);
-  z-index: 4;
 }

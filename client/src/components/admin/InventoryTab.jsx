@@ -8,10 +8,156 @@ const InventoryTab = () => {
   const [form, setForm] = useState({ 
     name: '', brand: '', supplierCost: '',
     scrapeUrl: '', image: '', description: '', notes: '', stockQuantity: '', 
-    category: 'Niche', gender: 'Unisex' 
+    category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None'
   });
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [bulkUrls, setBulkUrls] = useState('');
+  const [activeMode, setActiveMode] = useState('single');
 
-  // ... (fetchProducts and handleScrape unchanged)
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/products', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setProducts(data);
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEdit = (product) => {
+    setEditingId(product.id || product._id);
+    setForm({
+      name: product.name || '',
+      brand: product.brand || '',
+      supplierCost: String(product.supplierCost || ''),
+      image: product.image || '',
+      description: product.description || '',
+      notes: product.notes || '',
+      stockQuantity: String(product.stockQuantity || 0),
+      category: product.category || 'Niche',
+      gender: product.gender || 'Unisex',
+      wardrobeCategory: product.wardrobeCategory || 'None',
+      scrapeUrl: ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDiscoverySearch = async (query) => {
+    if (!query) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/scrape/discovery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+      setSearchResults(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleScrape = async (urlToScrape) => {
+    const url = urlToScrape || form.scrapeUrl;
+    if(!url) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if(res.ok) {
+        setForm({
+          ...form,
+          name: data.name || form.name,
+          brand: data.brand || form.brand,
+          image: data.image || form.image,
+          description: data.description || form.description,
+          notes: data.notes || (data.accords ? data.accords : form.notes),
+          gender: data.gender || form.gender,
+          scrapeUrl: url
+        });
+        setSearchResults([]);
+      } else {
+        alert("Scrape failed. Check URL format.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error during scraping");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkScrape = async () => {
+    const urls = bulkUrls.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+    if (urls.length === 0) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/scrape/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls })
+      });
+      const data = await res.json();
+      // For each success, we'll try to save it automatically if it has basic data
+      // but per user's instruction "Wait for final review", we might just list them
+      // for review? Actually, let's process them and show them as "Pending Review" items if possible,
+      // or just alert the summary.
+      console.log("Bulk Results:", data);
+      alert(`Bulk processing complete. ${data.filter(r => r.status === 'success').length} succeeded.`);
+      // Refresh inventory
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert("Bulk operation failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ... (keeping handleCancelEdit, handleDelete, handleSave, handleEdit as they were) ...
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setForm({ 
+      name: '', brand: '', supplierCost: '',
+      scrapeUrl: '', image: '', description: '', notes: '', stockQuantity: '', 
+      category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None'
+    });
+  };
+
+  const handleDelete = async (id) => {
+    if(!window.confirm("Reference will be purged from the Vault. Proceed?")) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/products/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if(res.ok) fetchProducts();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSave = async () => {
     if(!form.name || !form.brand || !form.supplierCost) {
@@ -20,22 +166,27 @@ const InventoryTab = () => {
     }
     setIsLoading(true);
     try {
+      const token = localStorage.getItem('token');
       const url = editingId ? `/api/products/${editingId}` : '/api/products';
       const method = editingId ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           name: form.name, 
-          house: form.brand, 
-          basePrice: form.supplierCost,
+          brand: form.brand, 
+          supplierCost: Number(form.supplierCost),
           image: form.image,
           description: form.description,
-          scentProfile: form.notes ? form.notes.split(',').map(s => s.trim()) : [],
-          stockQuantity: form.stockQuantity,
+          notes: form.notes,
+          stockQuantity: Number(form.stockQuantity) || 0,
           category: form.category,
-          gender: form.gender
+          gender: form.gender,
+          wardrobeCategory: form.wardrobeCategory
         })
       });
       if(res.ok) {
@@ -43,7 +194,7 @@ const InventoryTab = () => {
         setForm({ 
           name: '', brand: '', supplierCost: '',
           scrapeUrl: '', image: '', description: '', notes: '', stockQuantity: '', 
-          category: 'Niche', gender: 'Unisex' 
+          category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None'
         });
         setEditingId(null);
         fetchProducts();
@@ -59,46 +210,112 @@ const InventoryTab = () => {
     }
   };
 
-  const handleEdit = (product) => {
-    setEditingId(product.id || product._id);
-    setForm({
-      name: product.name,
-      brand: product.house || product.brand || '',
-      supplierCost: String(product.basePrice || product.supplierCost || ''),
-      image: product.image || (product.images && product.images[0]) || '',
-      description: product.description || '',
-      notes: product.scentProfile ? product.scentProfile.join(', ') : (product.notes || ''),
-      stockQuantity: String(product.stockQuantity || 0),
-      category: product.category || 'Niche',
-      gender: product.gender || 'Unisex',
-      scrapeUrl: ''
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const cost = parseFloat(form.supplierCost) || 0;
   const targetRetail = calculateRetailGHS(cost);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', marginBottom: '2rem' }}>
-        {editingId ? 'Edit Reference' : 'Archival Inventory'}
-      </h2>
-      
-      {/* Scraper Section */}
-      <div style={{ background: 'var(--color-surface-container-low)', padding: '2rem', marginBottom: '3rem', border: '1px solid var(--color-outline-variant)' }}>
-        <h3 style={{ textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.1em', color: 'var(--color-primary)', marginBottom: '1.5rem' }}>Auto-Fill from Fragrantica</h3>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-          <Input 
-            label="Fragrantica URL" 
-            placeholder="Paste fragrantica.com link..."
-            value={form.scrapeUrl}
-            onChange={(e) => setForm({...form, scrapeUrl: e.target.value})}
-            style={{ flex: 1 }}
-          />
-          <Button variant="secondary" onClick={handleScrape}>{isLoading ? 'Fetching...' : 'Scent Intel AI'}</Button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem' }}>
+          {editingId ? 'Edit Reference' : 'Archival Inventory'}
+        </h2>
+        <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--color-surface-container)', padding: '0.25rem', borderRadius: '4px' }}>
+          <button 
+            onClick={() => setActiveMode('single')}
+            style={{ 
+              padding: '0.5rem 1rem', border: 'none', borderRadius: '4px',
+              background: activeMode === 'single' ? 'var(--color-primary)' : 'transparent',
+              color: activeMode === 'single' ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+              cursor: 'pointer', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600
+            }}
+          >
+            Discovery
+          </button>
+          <button 
+            onClick={() => setActiveMode('bulk')}
+            style={{ 
+              padding: '0.5rem 1rem', border: 'none', borderRadius: '4px',
+              background: activeMode === 'bulk' ? 'var(--color-primary)' : 'transparent',
+              color: activeMode === 'bulk' ? 'var(--color-on-primary)' : 'var(--color-on-surface-variant)',
+              cursor: 'pointer', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600
+            }}
+          >
+            Bulk Ingest
+          </button>
         </div>
       </div>
+      
+      {/* Search / Discovery Section */}
+      {activeMode === 'single' ? (
+        <div style={{ background: 'var(--color-surface-container-low)', padding: '2rem', marginBottom: '3rem', border: '1px solid var(--color-outline-variant)', position: 'relative' }}>
+          <h3 style={{ textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.15em', color: 'var(--color-primary)', marginBottom: '1.5rem' }}>Scent Discovery Core</h3>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Input 
+                placeholder="Search perfume name (e.g. Baccarat Rouge 540)..."
+                value={form.scrapeUrl}
+                onChange={(e) => {
+                  setForm({...form, scrapeUrl: e.target.value});
+                  // Optionally trigger search on debounce, but for now we'll use the button
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleDiscoverySearch(form.scrapeUrl)}
+              />
+              {searchResults.length > 0 && (
+                <div style={{ 
+                  position: 'absolute', top: '100%', left: 0, right: 0, 
+                  background: 'var(--color-surface)', border: '1px solid var(--color-outline-variant)',
+                  zIndex: 100, marginTop: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                }}>
+                  {searchResults.map((result, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => handleScrape(result.link)}
+                      style={{ 
+                        padding: '1rem', borderBottom: i < searchResults.length - 1 ? '1px solid var(--color-outline-variant)' : 'none',
+                        cursor: 'pointer', transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = 'var(--color-surface-container)'}
+                      onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                    >
+                      <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{result.title}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)' }}>{result.link}</div>
+                    </div>
+                  ))}
+                  <div 
+                    onClick={() => setSearchResults([])}
+                    style={{ padding: '0.5rem', textAlign: 'center', fontSize: '0.65rem', color: 'var(--color-primary)', cursor: 'pointer', background: 'var(--color-surface-container-low)' }}
+                  >
+                    Close Results
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button variant="secondary" onClick={() => handleDiscoverySearch(form.scrapeUrl)}>{isLoading ? 'Finding...' : 'Discover'}</Button>
+            <Button variant="secondary" onClick={() => handleScrape()}>{isLoading ? 'Scraping...' : 'Scan URL'}</Button>
+          </div>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.65rem', color: 'var(--color-on-surface-variant)' }}>
+            Enter a perfume name to discover its dossier, or paste a direct Fragrantica link.
+          </p>
+        </div>
+      ) : (
+        <div style={{ background: 'var(--color-surface-container-low)', padding: '2rem', marginBottom: '3rem', border: '1px solid var(--color-outline-variant)' }}>
+          <h3 style={{ textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.15em', color: 'var(--color-primary)', marginBottom: '1.5rem' }}>Bulk Archival Ingestion</h3>
+          <textarea 
+            placeholder="Paste multiple Fragrantica URLs (one per line)..."
+            value={bulkUrls}
+            onChange={(e) => setBulkUrls(e.target.value)}
+            style={{ 
+              width: '100%', minHeight: '120px', padding: '1rem', 
+              background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)',
+              color: 'var(--color-on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.875rem',
+              resize: 'vertical', marginBottom: '1.5rem'
+            }}
+          />
+          <Button onClick={handleBulkScrape} disabled={isLoading || !bulkUrls}>
+            {isLoading ? 'Processing Batch...' : 'Begin Bulk Acquisition'}
+          </Button>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '3rem' }}>
         
@@ -124,7 +341,21 @@ const InventoryTab = () => {
                 <option value="Artisan">Artisan</option>
                 <option value="Indie">Indie</option>
               </select>
-            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)' }}>Wardrobe Segment (AI Consultant)</label>
+            <select 
+              value={form.wardrobeCategory} 
+              onChange={(e) => setForm({...form, wardrobeCategory: e.target.value})}
+              style={{ padding: '0.75rem', background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', color: 'var(--color-on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.875rem' }}
+            >
+              <option value="None">Not Assigned</option>
+              <option value="Day">Day (Fresh, Citrus, Clean)</option>
+              <option value="Night">Night (Deep, Sexy, Oriental)</option>
+              <option value="Office">Office (Professional, Subtle, Crisp)</option>
+              <option value="Rainy Day">Rainy Day (Warm, Spicy, Cozy)</option>
+            </select>
           </div>
 
           {/* Image Upload */}
@@ -230,7 +461,7 @@ const InventoryTab = () => {
                 <div style={{ flex: 1 }}>
                   <h4 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{product.name}</h4>
                   <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {product.brand} · {product.category || 'Niche'}
+                    {product.brand} · {product.category || 'Niche'} · <span style={{ color: product.wardrobeCategory !== 'None' ? 'var(--color-primary)' : 'inherit' }}>{product.wardrobeCategory}</span>
                   </p>
                 </div>
 

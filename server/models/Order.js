@@ -7,7 +7,9 @@ const orderSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
   depositStatus: { type: String, enum: ['Pending', 'Paid'], default: 'Pending' },
-  orderStatus: { type: String, enum: ['Confirmed', 'Ready for Pickup', 'Completed'], default: 'Confirmed' }
+  paymentReference: { type: String },
+  amountPaid: { type: Number, default: 0 },
+  orderStatus: { type: String, enum: ['Confirmed', 'Processing', 'Shipped', 'Ready for Pickup', 'Completed'], default: 'Confirmed' }
 }, {
   timestamps: true
 });

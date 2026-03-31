@@ -1,0 +1,100 @@
+.success-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.success-card {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  padding: 3rem;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  border-radius: 2px; /* PDE Minimalist look */
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #C5A059;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 2rem;
+}
+
+.success-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+.success-subtitle {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.receipt-actions {
+  background: #fdfbf7;
+  padding: 2rem;
+  border: 1px solid #eadbc0;
+  margin-bottom: 2rem;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.action-btn--download {
+  background: #1a1a1a;
+  color: white;
+}
+
+.action-btn--download:hover {
+  background: #333;
+}
+
+.email-note {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 1rem;
+}
+
+.vault-link {
+  background: transparent;
+  color: #C5A059;
+  text-decoration: underline;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.success-page--loading {
+  flex-direction: column;
+}
+
+.loading-logo {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 10px;
+  color: #C5A059;
+  margin-bottom: 1rem;
+}

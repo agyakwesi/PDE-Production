@@ -1,22 +1,49 @@
 import { useState, useEffect } from 'react';
-
-const CART_KEY = 'pde_cart';
-
-const getStoredCart = () => {
-  try {
-    const stored = localStorage.getItem(CART_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
+import { useAuth } from '../context/AuthContext';
 
 const useCart = () => {
-  const [cart, setCart] = useState(getStoredCart);
+  const { user } = useAuth();
+  const userId = user ? (user._id || user.id) : 'guest';
+  const cartKey = `pde_cart_${userId}`;
+
+  const [cart, setCart] = useState(() => {
+    try {
+      const stored = localStorage.getItem(cartKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Reload cart from local storage when the user logs in/out, or when another component updates it
+  useEffect(() => {
+    const loadCart = () => {
+      try {
+        const stored = localStorage.getItem(cartKey);
+        setCart(stored ? JSON.parse(stored) : []);
+      } catch {
+        setCart([]);
+      }
+    };
+
+    loadCart();
+
+    window.addEventListener('storage', loadCart);
+    window.addEventListener('cart_updated', loadCart);
+
+    return () => {
+      window.removeEventListener('storage', loadCart);
+      window.removeEventListener('cart_updated', loadCart);
+    };
+  }, [cartKey]);
 
   useEffect(() => {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  }, [cart]);
+    const newStr = JSON.stringify(cart);
+    if (localStorage.getItem(cartKey) !== newStr) {
+      localStorage.setItem(cartKey, newStr);
+      window.dispatchEvent(new Event('cart_updated'));
+    }
+  }, [cart, cartKey]);
 
   const addToCart = (product) => {
     setCart((prev) => {

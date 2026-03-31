@@ -15,6 +15,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const wardrobeRoutes = require('./routes/wardrobeRoutes');
 
 // Middleware
 app.use(cors());
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/wardrobe', wardrobeRoutes);
 app.use('/api/scrape', require('./routes/scraperRoutes'));
 
 app.post('/api/pricing-intel', require('./controllers/pricingController').getPricingStrategy);

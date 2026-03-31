@@ -10,7 +10,12 @@ const userSchema = new mongoose.Schema({
   verificationToken: { type: String },
   purchaseCount: { type: Number, default: 0 },
   founderStatus: { type: Boolean, default: false },
-  rewards: [{ type: String }]
+  rewards: [{ type: String }],
+  externalCollection: [{
+    name: { type: String, required: true },
+    brand: { type: String, required: true },
+    category: { type: String, enum: ['Day', 'Night', 'Office', 'Rainy Day'], required: true }
+  }]
 }, {
   timestamps: true
 });

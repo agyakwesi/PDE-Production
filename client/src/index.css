@@ -1,27 +1,45 @@
 :root {
-  /* Midnight & Gold Palette */
-  --color-primary: #D4AF37; /* Metallic Gold */
-  --color-primary-light: #F2CA50; /* Radiant Gold */
-  --color-primary-container: #AA8822; /* Deep Bronze */
+  /* Pristine Light & Gold Palette */
+  --color-primary: #8E793E; /* Sophisticated Bronze/Gold */
+  --color-primary-light: #AD944F; 
+  --color-primary-container: #D4AF37; 
   
-  --color-surface: #0A0A0A; /* Absolute Black */
-  --color-surface-container-highest: #1A1A1A; /* Charcoal */
-  --color-surface-container-low: #121212; /* Rich Black */
-  --color-surface-container-lowest: #050505; /* Void Black */
+  --color-surface: #FFFFFF; /* Absolute White */
+  --color-surface-container-highest: #F5F5F7; /* Apple-style light gray */
+  --color-surface-container-low: #FAFAFA; 
+  --color-surface-container-lowest: #FFFFFF; 
   
-  --color-on-surface: #E5E2E1; /* Off-White */
-  --color-on-surface-variant: #A09D9C; /* Muted Grey */
-  --color-outline-variant: #2A2A2A; /* Subtle Border */
-  --color-background: #000000;
+  --color-on-surface: #1D1D1F; /* Modern Deep Black */
+  --color-on-surface-variant: #6E6E73; /* Muted Gray */
+  --color-outline-variant: #D2D2D7; /* Subtle Border */
+  --color-background: #FFFFFF;
   
   /* Typography */
   --font-display: 'Noto Serif', serif;
   --font-body: 'Manrope', sans-serif;
   
   /* Effects */
-  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-blur: 32px;
   --ambient-gold: 0 0 40px rgba(212, 175, 55, 0.05);
+}
+
+.dark-section {
+  /* Midnight & Gold Palette (Original) */
+  --color-surface: #0A0A0A;
+  --color-surface-container-highest: #1A1A1A;
+  --color-surface-container-low: #121212;
+  --color-surface-container-lowest: #050505;
+  
+  --color-on-surface: #E5E2E1;
+  --color-on-surface-variant: #A09D9C;
+  --color-outline-variant: #2A2A2A;
+  --color-background: #000000;
+  
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  
+  background-color: var(--color-background) !important;
+  color: var(--color-on-surface) !important;
 }
 
 *, *::before, *::after {

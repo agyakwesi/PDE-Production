@@ -10,14 +10,15 @@ const createProduct = async (req, res) => {
 
     const newProduct = await Product.create({
       name,
-      house: brand,
-      basePrice: Number(supplierCost),
+      brand,
+      supplierCost: Number(supplierCost),
       scentProfile: parsedNotes,
       images: image ? [image] : [],
       description: description || '',
       stockQuantity: Number(stockQuantity) || 0,
       localRetailPrice: localRetailPrice ? Number(localRetailPrice) : undefined,
       category: category || 'Niche',
+      wardrobeCategory: req.body.wardrobeCategory || 'None',
       gender: gender || 'Unisex',
       perfumer: perfumer || '',
       rating: Number(rating) || 0,
@@ -37,12 +38,14 @@ const getProducts = async (req, res) => {
     const formattedProducts = products.map(p => ({
       id: p._id,
       name: p.name,
-      brand: p.house,
-      price: getGlobalPrice(p.basePrice),
+      brand: p.brand,
+      supplierCost: p.supplierCost,
+      price: getGlobalPrice(p.supplierCost),
       localRetailPrice: p.localRetailPrice,
       savings: p.savings,
       stockQuantity: p.stockQuantity || 0,
       category: p.category || 'Niche',
+      wardrobeCategory: p.wardrobeCategory || 'None',
       gender: p.gender || 'Unisex',
       status: p.stockQuantity > 0 ? `${p.stockQuantity} SLOTS AVAILABLE` : 'BE THE FIRST TO REQUEST',
       badge: null,
@@ -67,13 +70,15 @@ const getProductById = async (req, res) => {
     const formattedProduct = {
       id: product._id,
       name: product.name,
-      brand: product.house,
-      price: getGlobalPrice(product.basePrice),
+      brand: product.brand,
+      supplierCost: product.supplierCost,
+      price: getGlobalPrice(product.supplierCost),
       localRetailPrice: product.localRetailPrice,
       savings: product.savings,
       description: product.description || 'A rare extrait de parfum curated for the discerning collector.',
       batchTotal: product.moq || 2,
       stockQuantity: product.stockQuantity || 0,
+      wardrobeCategory: product.wardrobeCategory || 'None',
       image: product.images && product.images.length > 0 ? product.images[0] : null,
       notes: product.scentProfile && product.scentProfile.length > 0 ? product.scentProfile : null,
     };
@@ -90,12 +95,13 @@ const updateProduct = async (req, res) => {
     
     const updateData = {};
     if (name) updateData.name = name;
-    if (brand) updateData.house = brand;
-    if (supplierCost) updateData.basePrice = Number(supplierCost);
+    if (brand) updateData.brand = brand;
+    if (supplierCost) updateData.supplierCost = Number(supplierCost);
     if (localRetailPrice !== undefined) updateData.localRetailPrice = Number(localRetailPrice);
     if (description !== undefined) updateData.description = description;
     if (stockQuantity !== undefined) updateData.stockQuantity = Number(stockQuantity);
     if (category) updateData.category = category;
+    if (req.body.wardrobeCategory) updateData.wardrobeCategory = req.body.wardrobeCategory;
     if (gender) updateData.gender = gender;
     if (perfumer !== undefined) updateData.perfumer = perfumer;
     if (rating !== undefined) updateData.rating = Number(rating);
