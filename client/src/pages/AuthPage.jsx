@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
+import API_BASE_URL from '../config';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const AuthPage = () => {
 
     try {
       if (activeTab === 'signup') {
-        const res = await fetch('http://localhost:5000/api/auth/register', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -34,7 +35,7 @@ const AuthPage = () => {
            console.log("TEST EMAIL PREVIEW:", data.previewUrl);
         }
       } else {
-        const res = await fetch('http://localhost:5000/api/auth/login', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email, password: formData.password })

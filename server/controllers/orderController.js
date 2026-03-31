@@ -163,8 +163,9 @@ const verifyPayment = async (req, res) => {
         }))
       };
 
-      const receiptPath = `./receipts/receipt_${reference}.pdf`;
-      if (!fs.existsSync('./receipts')) fs.mkdirSync('./receipts');
+      const receiptsDir = path.join(__dirname, '..', 'receipts');
+      const receiptPath = path.join(receiptsDir, `receipt_${reference}.pdf`);
+      if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir);
 
       await generateReceipt(receiptData, receiptPath);
 
@@ -213,7 +214,8 @@ const updateOrderStatus = async (req, res) => {
 const downloadReceipt = async (req, res) => {
   try {
     const { reference } = req.params;
-    const receiptPath = `./receipts/receipt_${reference}.pdf`;
+    const receiptsDir = path.join(__dirname, '..', 'receipts');
+    const receiptPath = path.join(receiptsDir, `receipt_${reference}.pdf`);
 
     if (fs.existsSync(receiptPath)) {
       res.download(receiptPath);
@@ -235,7 +237,7 @@ const downloadReceipt = async (req, res) => {
         }))
       };
       
-      if (!fs.existsSync('./receipts')) fs.mkdirSync('./receipts');
+      if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir);
       await generateReceipt(receiptData, receiptPath);
       res.download(receiptPath);
     }

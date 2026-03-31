@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
+import API_BASE_URL from '../config';
 
 const VerifyPage = () => {
   const [searchParams] = useSearchParams();
@@ -17,7 +18,7 @@ const VerifyPage = () => {
 
     const verifyEmail = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/auth/verify?token=${token}`);
+        const res = await fetch(`${API_BASE_URL}/api/auth/verify?token=${token}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Verification failed');
         setStatus(data.message);

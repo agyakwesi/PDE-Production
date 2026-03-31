@@ -49,8 +49,9 @@ app.post('/api/upload', (req, res) => {
     const uploadDir = path.join(__dirname, 'uploads');
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
     
+    const host = req.get('host');
     fs.writeFileSync(path.join(uploadDir, filename), buffer);
-    res.status(200).json({ url: `http://localhost:5000/uploads/${filename}` });
+    res.status(200).json({ url: `http://${host}/uploads/${filename}` });
   } catch (error) {
     console.error("Upload Error:", error);
     res.status(500).json({ error: 'Upload sequence failed.' });
