@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://parfum-d-elie-1cc70f4bba0d.herokuapp.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
