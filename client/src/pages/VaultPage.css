@@ -1,0 +1,390 @@
+/* VaultPage.css */
+
+.vault-page {
+  padding: 6rem 4rem;
+}
+
+.vault-error-state {
+  padding: 8rem 2rem;
+  text-align: center;
+}
+
+.vault-error-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.vault-error-desc {
+  color: var(--color-on-surface-variant);
+  margin-bottom: 2rem;
+}
+
+.vault-loading-state {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vault-loading-text {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.vault-header {
+  font-size: 3.5rem;
+  margin-bottom: 4rem;
+  font-family: var(--font-display);
+}
+
+.vault-header span {
+  color: var(--color-primary);
+}
+
+.vault-layout {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 4rem;
+}
+
+.vault-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.vault-stat-card {
+  background: var(--color-surface-container-low);
+  padding: 2rem;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.vault-stat-title {
+  color: var(--color-on-surface-variant);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.vault-stat-value {
+  font-size: 3rem;
+  font-family: var(--font-display);
+}
+
+.vault-milestone-card {
+  background: var(--color-surface-container-low);
+  padding: 2.5rem 2rem;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.vault-milestone-tier {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.vault-milestone-reward {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.vault-milestone-desc {
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+}
+
+.vault-milestone-next {
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 1.5rem;
+}
+
+.vault-milestone-next-title {
+  font-size: 0.65rem;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.vault-milestone-bar-bg {
+  width: 100%;
+  height: 2px;
+  background: var(--color-surface-container-highest);
+  margin-bottom: 0.5rem;
+}
+
+.vault-milestone-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.vault-milestone-next-label {
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.vault-id-card {
+  padding: 2rem;
+  border: 1px solid var(--color-outline-variant);
+  opacity: 0.6;
+}
+
+.vault-id-title {
+  color: var(--color-on-surface-variant);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.vault-id-value {
+  font-size: 0.875rem;
+  font-family: monospace;
+}
+
+.vault-id-date {
+  font-size: 0.65rem;
+  color: var(--color-on-surface-variant);
+  margin-top: 1rem;
+}
+
+.vault-content {
+  flex: 1;
+}
+
+.vault-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 3rem;
+}
+
+.vault-section-title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+}
+
+.vault-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 6rem;
+}
+
+.vault-empty-state {
+  color: var(--color-on-surface-variant);
+  grid-column: 1 / -1;
+  padding: 4rem 2rem;
+  text-align: center;
+  border: 1px dashed var(--color-outline-variant);
+}
+
+.vault-collection-item {
+  cursor: pointer;
+}
+
+.vault-item-image-container {
+  background: var(--color-surface-container-lowest);
+  aspect-ratio: 4/5;
+  position: relative;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vault-item-status {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--color-surface-container-highest);
+  color: var(--color-primary);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  z-index: 2;
+}
+
+.vault-item-image {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.vault-item-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.vault-item-brand {
+  color: var(--color-on-surface-variant);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.vault-roadmap-section {
+  border-top: 1px solid var(--color-outline-variant);
+  padding-top: 4rem;
+}
+
+.vault-roadmap-title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+.vault-roadmap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  position: relative;
+  max-width: 600px;
+}
+
+.vault-roadmap-line {
+  position: absolute;
+  left: 11px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-outline-variant);
+  z-index: 0;
+}
+
+.vault-roadmap-step {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.vault-roadmap-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+}
+
+.vault-roadmap-status {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.vault-roadmap-step-title {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.vault-roadmap-step-desc {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.vault-how-it-works {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.vault-hiw-card {
+  background: var(--color-surface-container-low);
+  padding: 2rem;
+  border: 1px solid var(--color-outline-variant);
+}
+
+.vault-hiw-num {
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+
+.vault-hiw-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.vault-hiw-desc {
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* =====================================
+   Mobile Responsiveness Setup
+   ===================================== */
+
+@media (max-width: 1024px) {
+  .vault-layout {
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .vault-page {
+    padding: 3rem 1.5rem;
+  }
+  
+  .vault-header {
+    font-size: 2.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .vault-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .vault-sidebar {
+    gap: 1.5rem;
+  }
+
+  .vault-section-header {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .vault-section-title, .vault-roadmap-title {
+    font-size: 2rem;
+  }
+
+  .vault-collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .vault-item-image-container {
+    aspect-ratio: 1;
+  }
+
+  .vault-roadmap-section {
+    padding-top: 3rem;
+  }
+
+  .vault-roadmap-title {
+    margin-bottom: 2rem;
+  }
+
+  .vault-roadmap-step {
+    gap: 1rem;
+  }
+}

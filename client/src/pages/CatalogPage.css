@@ -1,0 +1,153 @@
+/* CatalogPage.css */
+
+.catalog-page {
+  padding: 6rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.catalog-header {
+  text-align: center;
+  margin-bottom: 6rem;
+}
+
+.catalog-title {
+  font-size: 4.5rem;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--color-on-background);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+.catalog-subtitle {
+  color: var(--color-on-surface);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+.catalog-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.catalog-toggle {
+  display: flex;
+  border: 1px solid var(--color-outline);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.catalog-toggle-btn {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 2rem;
+  cursor: pointer;
+  border: none;
+}
+
+.catalog-toggle-btn.active {
+  background: var(--color-on-background);
+  color: var(--color-background);
+}
+
+.catalog-toggle-btn.inactive {
+  background: transparent;
+  color: var(--color-on-surface-variant);
+}
+
+.catalog-reference-count {
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.catalog-empty-state {
+  padding: 4rem;
+  text-align: center;
+  color: var(--color-on-surface-variant);
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem 4rem;
+  justify-items: center;
+}
+
+.catalog-footer-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 6rem;
+}
+
+.catalog-expand-btn {
+  background: transparent;
+  border: 1px solid var(--color-on-background);
+  color: var(--color-on-background);
+  padding: 1.25rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  max-width: 1200px;
+  transition: all 0.3s ease;
+}
+
+.catalog-expand-btn:hover {
+  background: var(--color-on-background);
+  color: var(--color-background);
+}
+
+/* =====================================
+   Mobile Responsiveness Setup
+   ===================================== */
+
+@media (max-width: 768px) {
+  .catalog-page {
+    padding: 3rem 1.5rem;
+  }
+
+  .catalog-header {
+    margin-bottom: 3rem;
+  }
+
+  .catalog-title {
+    font-size: 2.75rem;
+  }
+
+  .catalog-subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+
+  .catalog-toggle-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.65rem;
+  }
+
+  .catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 2rem 1rem;
+  }
+
+  .catalog-footer-action {
+    margin-top: 4rem;
+  }
+
+  .catalog-expand-btn {
+    padding: 1rem;
+  }
+}

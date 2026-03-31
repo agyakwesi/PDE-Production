@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import './LandingPage.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -20,38 +21,26 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="landing-page" style={{ paddingBottom: '6rem' }}>
+    <div className="landing-page">
       {/* Hero Section */}
       <div className="dark-section">
-        <section style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '6rem 4rem',
-          minHeight: '80vh'
-        }}>
+        <section className="landing-hero">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{ maxWidth: '600px' }}
+            className="landing-hero-content"
           >
-            <p style={{ color: 'var(--color-primary)', letterSpacing: '0.2em', fontSize: '0.875rem', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            <p className="landing-hero-subtitle">
               The Collective Sourcing Experience
             </p>
-            <h1 style={{
-              fontSize: '5rem',
-              lineHeight: 1,
-              marginBottom: '2rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
+            <h1 className="landing-hero-title">
               Pre-Order<br/><span style={{ color: 'var(--color-primary-container)', fontStyle: 'italic' }}>Luxury</span> Scents.
             </h1>
-            <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '3rem', fontSize: '1.125rem', lineHeight: 1.6 }}>
+            <p className="landing-hero-description">
               Join the elite circle of curators. We pool pre-orders to unlock wholesale access to the world's rarest niche extraits de parfum. Once the batch fills, the cargo ships directly to Ghana.
             </p>
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
+            <div className="landing-hero-buttons">
               <Button onClick={() => navigate('/auth')}>Secure Your Bottle</Button>
               <Button variant="secondary" onClick={() => navigate('/catalog')}>View Live Catalog</Button>
             </div>
@@ -61,7 +50,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.4, ease: "easeOut", delay: 0.3 }}
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="landing-hero-graphic"
           >
             {/* Ambient glow behind logo */}
             <motion.div
@@ -75,10 +64,7 @@ const LandingPage = () => {
                 zIndex: 0
               }}
             />
-            <svg 
-              viewBox="0 0 1000 1000" 
-              style={{ width: '450px', height: '450px', position: 'relative', zIndex: 1 }}
-            >
+            <svg viewBox="0 0 1000 1000">
               {/* Outer gold circle - draws on */}
               <motion.circle
                 cx="500" cy="499.65" r="202.25"
@@ -112,15 +98,15 @@ const LandingPage = () => {
       </div>
 
       {/* Protocol Section */}
-      <section style={{ padding: '6rem 4rem' }}>
-        <div style={{ borderBottom: '1px solid var(--color-outline-variant)', paddingBottom: '1rem', width: '30%', marginBottom: '4rem' }}>
-          <p style={{ color: 'var(--color-primary)', letterSpacing: '0.2em', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+      <section className="landing-protocol">
+        <div className="landing-protocol-header">
+          <p className="landing-protocol-subtitle">
             The Protocol
           </p>
-          <h2 style={{ fontSize: '2.5rem' }}>How It Works</h2>
+          <h2 className="landing-protocol-title">How It Works</h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', background: 'var(--color-surface)', border: '1px solid var(--color-surface-container-highest)' }}>
+        <div className="protocol-grid">
           {[
             { step: '01', title: 'Browse & Select', desc: 'Explore our curated catalog of rare niche perfumes. Each reference is sourced directly from verified ateliers.' },
             { step: '02', title: 'Pre-Order', desc: 'Place your pre-order and pay a deposit to secure your slot in the current batch.' },
@@ -133,41 +119,22 @@ const LandingPage = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.6 }}
               key={item.step}
-              style={{
-                background: 'var(--color-surface-container-low)',
-                padding: '3rem 2rem',
-                minHeight: '350px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-              }}
+              className="protocol-card"
             >
-              <div style={{
-                border: '1px solid var(--color-primary)',
-                color: 'var(--color-primary)',
-                padding: '0.25rem 0.5rem',
-                fontSize: '0.75rem',
-                width: 'fit-content',
-                marginBottom: '1rem',
-              }}>{item.step}</div>
-              <h3 style={{ textTransform: 'uppercase', fontSize: '1.25rem', marginBottom: '1rem' }}>{item.title}</h3>
-              <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.875rem' }}>{item.desc}</p>
+              <div className="protocol-step">{item.step}</div>
+              <h3>{item.title}</h3>
+              <p>{item.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* Dynamic Promo Section */}
-      <section style={{ padding: '0 4rem' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
-          background: 'var(--color-surface-container-lowest)',
-          borderTop: '2px solid var(--color-surface-container-highest)'
-        }}>
-          <div style={{ padding: '6rem 4rem' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '1.5rem', textTransform: 'uppercase' }}>The Curated Vault</h2>
-            <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '1.125rem', maxWidth: '500px', marginBottom: '3rem' }}>
+      <section className="landing-promo">
+        <div className="promo-grid">
+          <div className="promo-grid-left">
+            <h2 className="promo-title">The Curated Vault</h2>
+            <p className="promo-desc">
               {stats.totalProducts > 0
                 ? `Currently featuring ${stats.totalProducts} exclusive reference${stats.totalProducts > 1 ? 's' : ''} sourced from the world's most coveted niche houses.`
                 : 'Our curators are currently sourcing the next wave of exclusive references. Check back soon.'
@@ -175,14 +142,14 @@ const LandingPage = () => {
             </p>
             <Button variant="tertiary" onClick={() => navigate('/catalog')}>Explore the Vault →</Button>
           </div>
-          <div style={{ background: 'var(--color-primary-container)', padding: '6rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h3 style={{ color: 'var(--color-background)', fontSize: '2rem', marginBottom: '1rem', textTransform: 'uppercase' }}>
+          <div className="promo-grid-right">
+            <h3>
               {stats.totalSlots > 0
                 ? `${stats.totalSlots} Slots Available.`
                 : 'New Batch Opening Soon.'
               }
             </h3>
-            <p style={{ color: 'var(--color-background)', opacity: 0.8, fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <p>
               {stats.totalSlots > 0
                 ? 'Secure your allocation before the batch closes.'
                 : 'Register now to be first in line when the next batch opens.'
