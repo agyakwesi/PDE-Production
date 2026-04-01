@@ -2,23 +2,19 @@ const nodemailer = require('nodemailer');
 
 const sendVerificationEmail = async (email, token) => {
   try {
-    // Generate a test account if we don't have real creds
-    const testAccount = await nodemailer.createTestAccount();
-
     const transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false, 
+      service: 'gmail',
       auth: {
-        user: testAccount.user, 
-        pass: testAccount.pass, 
-      },
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+      }
     });
 
-    const verifyUrl = `http://localhost:5173/verify?token=${token}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyUrl = `${baseUrl}/verify?token=${token}`;
 
     const info = await transporter.sendMail({
-      from: '"Parfum d\'Élite" <noreply@parfumelite.com>',
+      from: `"Parfum d'Élite" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: "Verify Your Email Address - Parfum d'Élite",
       text: `Welcome to Parfum d'Élite. Please verify your email by clicking the link: ${verifyUrl}`,
@@ -32,8 +28,7 @@ const sendVerificationEmail = async (email, token) => {
     });
 
     console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    return nodemailer.getTestMessageUrl(info);
+    return info.messageId;
   } catch (error) {
     console.error("Error sending email", error);
     throw error;
