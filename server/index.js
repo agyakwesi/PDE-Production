@@ -23,7 +23,12 @@ const wardrobeRoutes = require('./routes/wardrobeRoutes');
 
 // Middleware
 const corsOptions = {
-  origin: [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean),
+  origin: [
+    process.env.FRONTEND_URL, 
+    'http://localhost:5173',
+    'https://www.parfumdelite.tech',
+    'https://parfumdelite.tech'
+  ].filter(Boolean),
   credentials: true
 };
 app.use(cors(corsOptions));
