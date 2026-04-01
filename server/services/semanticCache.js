@@ -104,6 +104,8 @@ async function getCachedResponse(query) {
         if (score > highestScore) {
             highestScore = score;
             bestMatch = entry;
+            // Near-perfect match — no need to check remaining entries
+            if (highestScore >= 0.9999) break;
         }
     }
 
@@ -126,8 +128,15 @@ async function cacheResponse(query, response) {
     const embedding = await generateEmbedding(query);
     if (embedding) {
         // Limit cache size to prevent memory issues
-        if (cacheStore.length > 500) {
-            cacheStore.shift(); // Remove oldest
+        if (cacheStore.length >= 500) {
+            // Prefer evicting expired entries over removing the oldest active entry
+            const now = Date.now();
+            const firstExpired = cacheStore.findIndex(e => now - e.timestamp > CACHE_TTL);
+            if (firstExpired !== -1) {
+                cacheStore.splice(firstExpired, 1);
+            } else {
+                cacheStore.shift(); // Remove oldest when all entries are still valid
+            }
         }
 
         cacheStore.push({

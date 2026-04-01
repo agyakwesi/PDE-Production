@@ -5,31 +5,40 @@ const { callAI } = require('../services/aiHelpers');
 
 // Groq SDK is now handled in aiHelpers.js via callAI
 
-// Scrape a single URL (internal function)
-const performScrape = async (url) => {
-  if (!url || !url.includes('fragrantica.com')) {
+const BROWSER_ARGS = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-accelerated-2d-canvas",
+  "--no-first-run",
+  "--no-zygote",
+  "--disable-gpu"
+];
+
+// Max parallel scrapes during a bulk operation
+const SCRAPE_CONCURRENCY = 3;
+
+// Validate that a URL belongs to fragrantica.com
+const isValidFragranticaUrl = (url) => {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === 'fragrantica.com' || hostname.endsWith('.fragrantica.com');
+  } catch {
+    return false;
+  }
+};
+
+// Scrape a single URL using an existing browser page (internal)
+const scrapeWithBrowser = async (browser, url) => {
+  if (!url || !isValidFragranticaUrl(url)) {
     throw new Error("Invalid URL");
   }
 
-  const browser = await puppeteer.launch({
-    headless: "new",
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process",
-      "--disable-gpu"
-    ]
-  });
-  
+  let page = null;
   try {
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-    
+
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.evaluate(() => window.scrollBy(0, 1000));
     await new Promise(r => setTimeout(r, 1000));
@@ -41,7 +50,7 @@ const performScrape = async (url) => {
     const image = $('img[itemprop="image"]').attr('src');
     let description = $('div[itemprop="description"]').text().trim();
     const rating = $('span[itemprop="ratingValue"]').text().trim();
-    
+
     let gender = "Unisex";
     const titleText = $('h1[itemprop="name"]').text();
     if (titleText.includes("for women")) gender = "Female";
@@ -92,6 +101,25 @@ const performScrape = async (url) => {
 
     return { name, brand, image, description, notes, accords, rating, gender, url };
   } finally {
+    if (page) await page.close();
+  }
+};
+
+// Scrape a single URL (internal function)
+const performScrape = async (url) => {
+  if (!url || !isValidFragranticaUrl(url)) {
+    throw new Error("Invalid URL");
+  }
+
+  const browser = await puppeteer.launch({
+    headless: "new",
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: [...BROWSER_ARGS, "--single-process"]
+  });
+  
+  try {
+    return await scrapeWithBrowser(browser, url);
+  } finally {
     await browser.close();
   }
 };
@@ -141,16 +169,34 @@ exports.bulkScrape = async (req, res) => {
   if (!urls || !Array.isArray(urls)) return res.status(400).json({ error: "URLs array required" });
 
   try {
-    const results = [];
-    for (const url of urls) {
-      try {
-        const data = await performScrape(url);
-        results.push({ url, status: 'success', data });
-      } catch (err) {
-        results.push({ url, status: 'error', message: err.message });
+    // Launch one shared browser for the entire batch to avoid per-URL startup overhead
+    const browser = await puppeteer.launch({
+      headless: "new",
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: BROWSER_ARGS
+    });
+
+    try {
+      const results = [];
+      // Process URLs in parallel batches to balance speed vs. resource usage
+      for (let i = 0; i < urls.length; i += SCRAPE_CONCURRENCY) {
+        const batch = urls.slice(i, i + SCRAPE_CONCURRENCY);
+        const settled = await Promise.allSettled(
+          batch.map(url => scrapeWithBrowser(browser, url))
+        );
+        for (let j = 0; j < batch.length; j++) {
+          const r = settled[j];
+          if (r.status === 'fulfilled') {
+            results.push({ url: batch[j], status: 'success', data: r.value });
+          } else {
+            results.push({ url: batch[j], status: 'error', message: r.reason?.message || 'Scrape failed' });
+          }
+        }
       }
+      res.json(results);
+    } finally {
+      await browser.close();
     }
-    res.json(results);
   } catch (error) {
     res.status(500).json({ error: "Bulk operation failed" });
   }
