@@ -7,6 +7,7 @@ import AuthPage from './pages/AuthPage';
 import CatalogPage from './pages/CatalogPage';
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import VaultPage from './pages/VaultPage';
 import AdminPage from './pages/AdminPage';
 import VerifyPage from './pages/VerifyPage';
@@ -25,6 +26,7 @@ function App() {
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="catalog/:id" element={<ProductDetailsPage />} />
           <Route path="cart" element={<CartPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
           <Route path="order-success" element={<OrderSuccessPage />} />
           <Route path="vault" element={<VaultPage />} />
           <Route path="admin" element={<AdminPage />} />

@@ -12,31 +12,36 @@ const BROWSER_ARGS = [
   "--disable-accelerated-2d-canvas",
   "--no-first-run",
   "--no-zygote",
+  "--single-process",
   "--disable-gpu"
 ];
 
-// Max parallel scrapes during a bulk operation
-const SCRAPE_CONCURRENCY = 3;
+const BULK_BATCH_SIZE = 3;
 
-// Validate that a URL belongs to fragrantica.com
-const isValidFragranticaUrl = (url) => {
+/**
+ * Validate that a URL belongs to fragrantica.com using hostname parsing
+ * to prevent subdomain/path bypass attacks.
+ */
+function isValidFragranticaUrl(url) {
   try {
     const { hostname } = new URL(url);
     return hostname === 'fragrantica.com' || hostname.endsWith('.fragrantica.com');
   } catch {
     return false;
   }
-};
+}
 
-// Scrape a single URL using an existing browser page (internal)
-const scrapeWithBrowser = async (browser, url) => {
-  if (!url || !isValidFragranticaUrl(url)) {
-    throw new Error("Invalid URL");
-  }
-
-  let page = null;
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage"
+    ]
+  });
+  
   try {
-    page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -101,22 +106,22 @@ const scrapeWithBrowser = async (browser, url) => {
 
     return { name, brand, image, description, notes, accords, rating, gender, url };
   } finally {
-    if (page) await page.close();
+    await page.close();
   }
 };
 
 // Scrape a single URL (internal function)
 const performScrape = async (url) => {
-  if (!url || !isValidFragranticaUrl(url)) {
+  if (!isValidFragranticaUrl(url)) {
     throw new Error("Invalid URL");
   }
 
   const browser = await puppeteer.launch({
     headless: "new",
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: [...BROWSER_ARGS, "--single-process"]
+    args: BROWSER_ARGS
   });
-  
+
   try {
     return await scrapeWithBrowser(browser, url);
   } finally {
@@ -168,36 +173,34 @@ exports.bulkScrape = async (req, res) => {
   const { urls } = req.body;
   if (!urls || !Array.isArray(urls)) return res.status(400).json({ error: "URLs array required" });
 
-  try {
-    // Launch one shared browser for the entire batch to avoid per-URL startup overhead
-    const browser = await puppeteer.launch({
-      headless: "new",
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      args: BROWSER_ARGS
-    });
+  const browser = await puppeteer.launch({
+    headless: "new",
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: BROWSER_ARGS
+  });
 
-    try {
-      const results = [];
-      // Process URLs in parallel batches to balance speed vs. resource usage
-      for (let i = 0; i < urls.length; i += SCRAPE_CONCURRENCY) {
-        const batch = urls.slice(i, i + SCRAPE_CONCURRENCY);
-        const settled = await Promise.allSettled(
-          batch.map(url => scrapeWithBrowser(browser, url))
-        );
-        for (let j = 0; j < batch.length; j++) {
-          const r = settled[j];
-          if (r.status === 'fulfilled') {
-            results.push({ url: batch[j], status: 'success', data: r.value });
-          } else {
-            results.push({ url: batch[j], status: 'error', message: r.reason?.message || 'Scrape failed' });
+  try {
+    const results = [];
+    for (let i = 0; i < urls.length; i += BULK_BATCH_SIZE) {
+      const batch = urls.slice(i, i + BULK_BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(async (url) => {
+          if (!isValidFragranticaUrl(url)) {
+            return { url, status: 'error', message: 'Invalid URL' };
           }
-        }
-      }
-      res.json(results);
-    } finally {
-      await browser.close();
+          try {
+            const data = await scrapeWithBrowser(browser, url);
+            return { url, status: 'success', data };
+          } catch (err) {
+            return { url, status: 'error', message: err.message };
+          }
+        })
+      );
+      results.push(...batchResults);
     }
   } catch (error) {
     res.status(500).json({ error: "Bulk operation failed" });
+  } finally {
+    await browser.close();
   }
 };

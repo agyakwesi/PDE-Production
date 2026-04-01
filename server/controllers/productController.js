@@ -3,7 +3,7 @@ const { getGlobalPrice } = require('../utils/pricing');
 
 const createProduct = async (req, res) => {
   try {
-    const { name, brand, supplierCost, localRetailPrice, image, description, notes, stockQuantity, category, gender, perfumer, rating, season } = req.body;
+    const { name, brand, supplierCost, localRetailPrice, image, description, notes, stockQuantity, category, gender, perfumer, rating, season, variants } = req.body;
     
     // Convert string notes to an array
     const parsedNotes = notes ? notes.split(',').map(n => n.trim()).filter(n => n.length > 0) : [];
@@ -22,7 +22,8 @@ const createProduct = async (req, res) => {
       gender: gender || 'Unisex',
       perfumer: perfumer || '',
       rating: Number(rating) || 0,
-      season: season || ''
+      season: season || '',
+      variants: variants || []
     });
 
     res.status(201).json(newProduct);
@@ -51,7 +52,8 @@ const getProducts = async (req, res) => {
       badge: null,
       image: p.images && p.images.length > 0 ? p.images[0] : null,
       description: p.description || '',
-      notes: p.scentProfile && p.scentProfile.length > 0 ? p.scentProfile.join(', ') : ''
+      notes: p.scentProfile && p.scentProfile.length > 0 ? p.scentProfile.join(', ') : '',
+      variants: p.variants || []
     }));
 
     res.status(200).json(formattedProducts);
@@ -81,6 +83,7 @@ const getProductById = async (req, res) => {
       wardrobeCategory: product.wardrobeCategory || 'None',
       image: product.images && product.images.length > 0 ? product.images[0] : null,
       notes: product.scentProfile && product.scentProfile.length > 0 ? product.scentProfile : null,
+      variants: product.variants || []
     };
     
     res.status(200).json(formattedProduct);
@@ -107,6 +110,7 @@ const updateProduct = async (req, res) => {
     if (rating !== undefined) updateData.rating = Number(rating);
     if (season !== undefined) updateData.season = season;
     if (image) updateData.images = [image];
+    if (req.body.variants) updateData.variants = req.body.variants;
     if (notes) {
       updateData.scentProfile = notes.split(',').map(n => n.trim()).filter(n => n.length > 0);
     }
@@ -130,5 +134,19 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
+const shortenDescription = async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description) return res.status(400).json({ message: 'Description is required' });
+    
+    const { shortenFragranceDescription } = require('../services/aiHelpers');
+    const shortened = await shortenFragranceDescription(description);
+    
+    res.status(200).json({ shortened });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct, shortenDescription };
 
