@@ -28,7 +28,6 @@ const getMyOrders = async (req, res) => {
 };
 
 const User = require('../models/User');
-const path = require('path');
 const axios = require('axios');
 const PAYSTACK_SECRET = (process.env.PAYSTACK_SECRET_KEY || '').replace(/[\r\n\t"]/g, '').trim();
 const nodemailer = require('nodemailer');
@@ -392,4 +391,4 @@ const chargeMoMo = async (req, res) => {
   }
 };
 
-module.exports = { getAdminOrders, getMyOrders, createOrder, checkMilestones, updateOrderStatus, verifyPayment, downloadReceipt, chargeCard, chargeSubmitOtp, chargeMoMo };
+module.exports = { getAdminOrders, getMyOrders, createOrder, updateOrderStatus, verifyPayment, downloadReceipt, chargeCard, chargeSubmitOtp, chargeMoMo };

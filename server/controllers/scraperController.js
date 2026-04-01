@@ -31,16 +31,8 @@ function isValidFragranticaUrl(url) {
   }
 }
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage"
-    ]
-  });
-  
+const scrapeWithBrowser = async (browser, url) => {
+  const page = await browser.newPage();
   try {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
@@ -198,6 +190,7 @@ exports.bulkScrape = async (req, res) => {
       );
       results.push(...batchResults);
     }
+    res.json(results);
   } catch (error) {
     res.status(500).json({ error: "Bulk operation failed" });
   } finally {

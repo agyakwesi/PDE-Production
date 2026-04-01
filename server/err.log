@@ -1,0 +1,16 @@
+[dotenv@17.3.1] injecting env (9) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+C:\Users\agyak\Documents\GitHub\PDE-Production\server\controllers\scraperController.js:34
+  const browser = await puppeteer.launch({
+                  ^^^^^
+
+SyntaxError: await is only valid in async functions and the top level bodies of modules
+    at wrapSafe (node:internal/modules/cjs/loader:1692:18)
+    at Module._compile (node:internal/modules/cjs/loader:1735:20)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at Module.patchedRequire (C:\Users\agyak\Documents\GitHub\PDE-Production\server\node_modules\require-in-the-middle\index.js:209:27)
+    at Hook._require.Module.require (C:\Users\agyak\Documents\GitHub\PDE-Production\server\node_modules\require-in-the-middle\index.js:134:27)
