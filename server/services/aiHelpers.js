@@ -298,10 +298,28 @@ async function analyzeImage(imageBase64) {
   }
 }
 
+/**
+ * Shorten fragrance description using NVIDIA NIM (Llama 3)
+ * @param {string} description - Long perfume description
+ * @returns {Promise<string>} - Shortened elegant description
+ */
+async function shortenFragranceDescription(description) {
+  const systemPrompt = `You are an elegant luxury perfume copywriter for Parfum D'Elite. 
+  Your goal is to shorten perfume descriptions into 2-3 sophisticated sentences.
+  Focus on the emotion, the key notes, and the character of the scent.
+  Maintain a premium, exclusive, and evocative tone.
+  Do not exceed 50 words.`;
+
+  const userMessage = `Shorten this description: "${description}"`;
+
+  return await callAI(systemPrompt, userMessage, 0.5, 150);
+}
+
 module.exports = {
   callAI,
   extractFragranceNotes,
   generatePersonalizedMessage,
   analyzeReviewSentiment,
-  analyzeImage
+  analyzeImage,
+  shortenFragranceDescription
 };
