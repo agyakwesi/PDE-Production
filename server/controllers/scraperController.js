@@ -12,17 +12,12 @@ const performScrape = async (url) => {
   }
 
   const browser = await puppeteer.launch({
-    headless: "new",
+    headless: true,
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process",
-      "--disable-gpu"
+      "--disable-dev-shm-usage"
     ]
   });
   

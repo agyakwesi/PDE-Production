@@ -16,7 +16,12 @@ const productSchema = new mongoose.Schema({
   season: { type: String },
   images: [{ type: String }],
   isArchive: { type: Boolean, default: false },
-  localRetailPrice: { type: Number }
+  localRetailPrice: { type: Number },
+  variants: [{
+    size: { type: String, required: true }, // e.g., "50ml", "100ml"
+    supplierCost: { type: Number, required: true },
+    stockQuantity: { type: Number, default: 0 },
+  }]
 }, {
   timestamps: true,
   toJSON: {

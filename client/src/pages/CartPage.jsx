@@ -10,9 +10,7 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
-  const [isProcessing, setIsProcessing] = useState(false);
   const [toast, setToast] = useState(null);
-  const [useMoMo, setUseMoMo] = useState(false);
 
   // Constants
   const shipping = 0; // Shipping is inclusive in the retail price as per pricingEngine
@@ -36,46 +34,13 @@ const CartPage = () => {
     };
   });
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       navigate('/auth');
       return;
     }
-
     if (cart.length === 0) return;
-
-    setIsProcessing(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          items: lineItems,
-          paymentMethod: useMoMo ? 'MoMo' : 'Paystack',
-          totalAmount: total
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Checkout failed');
-
-      if (data.authorization_url) {
-        window.location.href = data.authorization_url;
-      } else {
-        // If no redirect URL, maybe it's a manual process or failure
-        throw new Error('Payment initialization failed');
-      }
-    } catch (err) {
-      console.error(err);
-      setToast(err.message || 'Error occurred during allocation');
-      setTimeout(() => setToast(null), 3000);
-    } finally {
-      setIsProcessing(false);
-    }
+    navigate('/checkout');
   };
 
   const copyProductLink = (id) => {
@@ -169,11 +134,10 @@ const CartPage = () => {
           </div>
 
           <button
-            className={`checkout-btn ${useMoMo ? 'checkout-btn--momo' : ''}`}
-            disabled={isProcessing}
+            className="checkout-btn"
             onClick={handleCheckout}
           >
-            {isProcessing ? 'Processing Allocation...' : 'Pay with Paystack'}
+            Continue to Checkout →
           </button>
 
           <div className="trust-signals">

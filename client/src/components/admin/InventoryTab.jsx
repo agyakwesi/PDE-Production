@@ -9,7 +9,8 @@ const InventoryTab = () => {
   const [form, setForm] = useState({ 
     name: '', brand: '', supplierCost: '',
     scrapeUrl: '', image: '', description: '', notes: '', stockQuantity: '', 
-    category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None'
+    category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None',
+    variants: []
   });
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +52,7 @@ const InventoryTab = () => {
       category: product.category || 'Niche',
       gender: product.gender || 'Unisex',
       wardrobeCategory: product.wardrobeCategory || 'None',
+      variants: product.variants || [],
       scrapeUrl: ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -98,7 +100,8 @@ const InventoryTab = () => {
         });
         setSearchResults([]);
       } else {
-        alert("Scrape failed. Check URL format.");
+        const errorData = await res.json();
+        alert(`Scrape failed: ${errorData.error || "Check URL format"}`);
       }
     } catch (err) {
       console.error(err);
@@ -142,7 +145,8 @@ const InventoryTab = () => {
     setForm({ 
       name: '', brand: '', supplierCost: '',
       scrapeUrl: '', image: '', description: '', notes: '', stockQuantity: '', 
-      category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None'
+      category: 'Niche', gender: 'Unisex', wardrobeCategory: 'None',
+      variants: []
     });
   };
 
@@ -187,7 +191,8 @@ const InventoryTab = () => {
           stockQuantity: Number(form.stockQuantity) || 0,
           category: form.category,
           gender: form.gender,
-          wardrobeCategory: form.wardrobeCategory
+          wardrobeCategory: form.wardrobeCategory,
+          variants: form.variants
         })
       });
       if(res.ok) {
@@ -203,12 +208,57 @@ const InventoryTab = () => {
         const errorData = await res.json();
         alert("Failed to save: " + errorData.message);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Network Error while saving");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOptimizeDescription = async () => {
+    if (!form.description) return;
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/products/ai/shorten', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ description: form.description })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setForm(prev => ({ ...prev, description: data.shortened }));
+      } else {
+        alert("AI Shortening failed");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addVariant = () => {
+    setForm(prev => ({
+      ...prev,
+      variants: [...prev.variants, { size: '', supplierCost: '', stockQuantity: '' }]
+    }));
+  };
+
+  const removeVariant = (index) => {
+    setForm(prev => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateVariant = (index, field, value) => {
+    setForm(prev => {
+      const newVariants = [...prev.variants];
+      newVariants[index] = { ...newVariants[index], [field]: value };
+      return { ...prev, variants: newVariants };
+    });
   };
 
   const cost = parseFloat(form.supplierCost) || 0;
@@ -393,6 +443,55 @@ const InventoryTab = () => {
                 <span style={{ fontSize: '0.65rem', color: 'var(--color-primary)' }}>✓ Image linked</span>
               </div>
             )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)' }}>Description</label>
+              <button 
+                onClick={handleOptimizeDescription}
+                style={{ 
+                  background: 'var(--color-primary)', border: 'none', color: 'var(--color-on-primary)',
+                  fontSize: '0.6rem', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer',
+                  textTransform: 'uppercase', fontWeight: 600
+                }}
+              >
+                {isLoading ? 'Optimizing...' : 'Optimize with NVIDIA AI'}
+              </button>
+            </div>
+            <textarea 
+              value={form.description} 
+              onChange={(e) => setForm({...form, description: e.target.value})}
+              style={{ padding: '0.75rem', background: 'var(--color-surface-container)', border: '1px solid var(--color-outline-variant)', color: 'var(--color-on-surface)', fontFamily: 'var(--font-body)', fontSize: '0.875rem', minHeight: '100px', resize: 'vertical' }}
+            />
+          </div>
+
+          {/* Variant Manager */}
+          <div style={{ background: 'var(--color-surface-container-low)', padding: '1.5rem', border: '1px solid var(--color-outline-variant)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.1em', color: 'var(--color-primary)' }}>Size Variants (ML Options)</h4>
+              <Button variant="secondary" onClick={addVariant} style={{ height: '30px', padding: '0 1rem' }}>Add Option</Button>
+            </div>
+            
+            {form.variants.length === 0 && (
+              <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>No custom ML options added. Top-level cost/stock will be used.</p>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {form.variants.map((v, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end' }}>
+                  <Input label="Size (e.g. 50ml)" value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} />
+                  <Input label="Supplier (USD)" value={v.supplierCost} type="number" onChange={(e) => updateVariant(i, 'supplierCost', e.target.value)} />
+                  <Input label="Stock" value={v.stockQuantity} type="number" onChange={(e) => updateVariant(i, 'stockQuantity', e.target.value)} />
+                  <button 
+                    onClick={() => removeVariant(i)}
+                    style={{ background: 'transparent', border: 'none', color: '#c83232', cursor: 'pointer', padding: '0.5rem' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <Input label="Accords / Notes" placeholder="Comma separated (e.g. Oud, Amber, Musk)" value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})} />
