@@ -27,22 +27,7 @@ const getMyOrders = async (req, res) => {
 };
 
 const User = require('../models/User');
-
-const checkMilestones = async (user) => {
-  const rewards = user.rewards || [];
-  if (user.purchaseCount >= 3 && !rewards.includes('3 Purchases Reward')) {
-    rewards.push('3 Purchases Reward');
-  }
-  if (user.purchaseCount >= 5 && !rewards.includes('5 Purchases Reward')) {
-    rewards.push('5 Purchases Reward');
-  }
-  if (user.purchaseCount >= 10 && !rewards.includes('10 Purchases Reward')) {
-    rewards.push('10 Purchases Reward');
-  }
-  user.rewards = rewards;
-  await user.save();
-};
-
+const path = require('path');
 const axios = require('axios');
 const PAYSTACK_SECRET = (process.env.PAYSTACK_SECRET_KEY || '').trim();
 const nodemailer = require('nodemailer');
@@ -248,4 +233,4 @@ const downloadReceipt = async (req, res) => {
   }
 };
 
-module.exports = { getAdminOrders, getMyOrders, createOrder, checkMilestones, updateOrderStatus, verifyPayment, downloadReceipt };
+module.exports = { getAdminOrders, getMyOrders, createOrder, updateOrderStatus, verifyPayment, downloadReceipt };

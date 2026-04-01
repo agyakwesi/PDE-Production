@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import API_BASE_URL from './config.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import * as Sentry from "@sentry/react";
 
