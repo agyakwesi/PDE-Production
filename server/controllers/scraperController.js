@@ -13,6 +13,7 @@ const performScrape = async (url) => {
 
   const browser = await puppeteer.launch({
     headless: "new",
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -20,6 +21,7 @@ const performScrape = async (url) => {
       "--disable-accelerated-2d-canvas",
       "--no-first-run",
       "--no-zygote",
+      "--single-process",
       "--disable-gpu"
     ]
   });
@@ -128,8 +130,8 @@ exports.discoverySearch = async (req, res) => {
 
     res.json(results);
   } catch (error) {
-    console.error("Serper Error:", error.message);
-    res.status(500).json({ error: "Search failed" });
+    console.error("Serper Error Details:", error.response?.data || error.message);
+    res.status(500).json({ error: "Search failed", details: error.response?.data || error.message });
   }
 };
 

@@ -1,3 +1,7 @@
+const tracer = require('dd-trace').init({
+  logInjection: true
+});
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
