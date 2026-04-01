@@ -32,6 +32,7 @@ const corsOptions = {
   credentials: true
 };
 app.use(cors(corsOptions));
+app.use('/api/datadog-proxy', require('./routes/datadogProxy'));
 app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 image payload
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
