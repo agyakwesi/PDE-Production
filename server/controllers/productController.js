@@ -33,7 +33,7 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({ isArchive: false }).sort({ createdAt: -1 });
+    const products = await Product.find({ isArchive: false }).sort({ createdAt: -1 }).lean();
     
     const formattedProducts = products.map(p => ({
       id: p._id,

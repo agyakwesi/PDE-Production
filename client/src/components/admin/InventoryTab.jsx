@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
-import { calculateRetailGHS, formatGHS, calculateLandedUSD, formatUSD } from '../../utils/pricingEngine';
+import { calculateRetailGHS, formatGHS, formatUSD } from '../../utils/pricingEngine';
 import API_BASE_URL from '../../config';
 
 const InventoryTab = () => {

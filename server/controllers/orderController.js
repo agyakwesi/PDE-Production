@@ -5,7 +5,8 @@ const getAdminOrders = async (req, res) => {
     const orders = await Order.find()
       .populate('user', 'name email')
       .populate('product', 'name brand supplierCost')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     
     res.status(200).json(orders);
   } catch (err) {
@@ -17,7 +18,8 @@ const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }) // Ensure it only gets the current user's orders
       .populate('product')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.status(200).json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });

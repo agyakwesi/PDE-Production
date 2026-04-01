@@ -7,5 +7,9 @@
   "scripts": {
     "start": "cd server && npm start",
     "heroku-postbuild": "cd server && npm install"
+  },
+  "dependencies": {
+    "@datadog/browser-rum": "^6.32.0",
+    "@datadog/browser-rum-react": "^6.32.0"
   }
 }

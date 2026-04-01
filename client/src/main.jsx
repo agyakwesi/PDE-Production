@@ -1,28 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { datadogRum } from '@datadog/browser-rum';
-
 import './index.css'
 import App from './App.jsx'
 import API_BASE_URL from './config.js'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import * as Sentry from "@sentry/react";
 
-datadogRum.init({
-    applicationId: '51b9d3e7-9078-4f96-89f7-600debf31ab3',
-    clientToken: 'pubb90bb15089ac15771a98b779bb825bb9',
-    site: 'us5.datadoghq.com',
-    proxy: `${API_BASE_URL}/api/datadog-proxy`,
-    service: 'pde-frontend',
-    env: 'production',
-    sessionSampleRate: 100,
-    sessionReplaySampleRate: 100,
-    trackUserInteractions: true,
-    trackResources: true,
-    trackLongTasks: true,
-    defaultPrivacyLevel: 'mask-user-input',
+Sentry.init({
+  dsn: "https://bd5c863e6256fb5856cfbfdee3a9ba65@o4511144338784256.ingest.us.sentry.io/4511144358576128",
+  // Setting this option to true will send default PII data to Sentry.
+  // For example, automatic IP address collection on events
+  sendDefaultPii: true
 });
-
-datadogRum.startSessionReplayRecording();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

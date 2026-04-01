@@ -1,7 +1,7 @@
 // Heritage Pricing Logic (Supplier Cost Centric)
 
 export const FIXED_RATE = 10.90; 
-export const SHIPPING_COST_USD = 6.30;
+const SHIPPING_COST_USD = 6.30;
 export const BUFFER_PERCENT = 0.17; 
 export const MARGIN_PERCENT = 0.45;
 

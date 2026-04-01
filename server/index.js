@@ -1,6 +1,5 @@
-const tracer = require('dd-trace').init({
-  logInjection: true
-});
+require('./instrument.js');
+const Sentry = require('@sentry/node');
 
 const express = require('express');
 const path = require('path');
@@ -32,7 +31,6 @@ const corsOptions = {
   credentials: true
 };
 app.use(cors(corsOptions));
-app.use('/api/datadog-proxy', require('./routes/datadogProxy'));
 app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 image payload
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -76,6 +74,11 @@ app.post('/api/upload', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend is running!' });
 });
+
+
+
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
 
 const PORT = process.env.PORT || 5000;
 

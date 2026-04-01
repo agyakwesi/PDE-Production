@@ -1,30 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getStoredCart } from './cartStorage';
 
 const useCart = () => {
   const { user } = useAuth();
   const userId = user ? (user._id || user.id) : 'guest';
   const cartKey = `pde_cart_${userId}`;
 
-  const [cart, setCart] = useState(() => {
-    try {
-      const stored = localStorage.getItem(cartKey);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [cart, setCart] = useState(() => getStoredCart(cartKey));
 
   // Reload cart from local storage when the user logs in/out, or when another component updates it
   useEffect(() => {
-    const loadCart = () => {
-      try {
-        const stored = localStorage.getItem(cartKey);
-        setCart(stored ? JSON.parse(stored) : []);
-      } catch {
-        setCart([]);
-      }
-    };
+    const loadCart = () => setCart(getStoredCart(cartKey));
 
     loadCart();
 
