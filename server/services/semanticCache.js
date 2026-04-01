@@ -101,6 +101,10 @@ async function getCachedResponse(query) {
         if (now - entry.timestamp > CACHE_TTL) continue;
 
         const score = cosineSimilarity(queryEmbedding, entry.embedding);
+        if (score >= 0.9999) {
+            console.log(`⚡ Semantic Cache Hit! (Score: ${score.toFixed(4)})`);
+            return entry.response;
+        }
         if (score > highestScore) {
             highestScore = score;
             bestMatch = entry;
@@ -127,7 +131,12 @@ async function cacheResponse(query, response) {
     if (embedding) {
         // Limit cache size to prevent memory issues
         if (cacheStore.length > 500) {
-            cacheStore.shift(); // Remove oldest
+            const expiredIndex = cacheStore.findIndex(e => Date.now() - e.timestamp > CACHE_TTL);
+            if (expiredIndex !== -1) {
+                cacheStore.splice(expiredIndex, 1);
+            } else {
+                cacheStore.shift(); // Remove oldest if no expired entries
+            }
         }
 
         cacheStore.push({

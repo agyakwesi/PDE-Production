@@ -43,4 +43,6 @@ productSchema.virtual('savings').get(function() {
   return 0;
 });
 
+productSchema.index({ isArchive: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Product', productSchema);
