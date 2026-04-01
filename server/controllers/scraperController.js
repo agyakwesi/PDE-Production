@@ -198,7 +198,6 @@ exports.bulkScrape = async (req, res) => {
       );
       results.push(...batchResults);
     }
-    res.json(results);
   } catch (error) {
     res.status(500).json({ error: "Bulk operation failed" });
   } finally {

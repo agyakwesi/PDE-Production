@@ -108,6 +108,8 @@ async function getCachedResponse(query) {
         if (score > highestScore) {
             highestScore = score;
             bestMatch = entry;
+            // Near-perfect match — no need to check remaining entries
+            if (highestScore >= 0.9999) break;
         }
     }
 
