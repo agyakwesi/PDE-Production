@@ -44,7 +44,7 @@ const checkMilestones = async (user) => {
 };
 
 const axios = require('axios');
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET = (process.env.PAYSTACK_SECRET_KEY || '').trim();
 const nodemailer = require('nodemailer');
 const { generateReceipt } = require('../utils/receiptGenerator');
 const fs = require('fs');
