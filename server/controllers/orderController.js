@@ -1,3 +1,4 @@
+const path = require('path');
 const Order = require('../models/Order');
 
 const getAdminOrders = async (req, res) => {
@@ -29,7 +30,7 @@ const getMyOrders = async (req, res) => {
 const User = require('../models/User');
 const path = require('path');
 const axios = require('axios');
-const PAYSTACK_SECRET = (process.env.PAYSTACK_SECRET_KEY || '').trim();
+const PAYSTACK_SECRET = (process.env.PAYSTACK_SECRET_KEY || '').replace(/[\r\n\t"]/g, '').trim();
 const nodemailer = require('nodemailer');
 const { generateReceipt } = require('../utils/receiptGenerator');
 const fs = require('fs');
@@ -233,4 +234,162 @@ const downloadReceipt = async (req, res) => {
   }
 };
 
-module.exports = { getAdminOrders, getMyOrders, createOrder, updateOrderStatus, verifyPayment, downloadReceipt };
+// ─── Paystack Charge API (Custom Embedded Checkout) ─────────────────────────
+
+const chargeCard = async (req, res) => {
+  try {
+    const { cardNumber, cvv, expiryMonth, expiryYear, items, totalAmount, shippingAddress, shippingMethod, selectedSamples } = req.body;
+    const userEmail = req.user.email;
+    const userId = req.user.id;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'No items in order' });
+    }
+    if (!cardNumber || !cvv || !expiryMonth || !expiryYear) {
+      return res.status(400).json({ message: 'Card details are incomplete' });
+    }
+
+    const amountInPesewas = Math.round(totalAmount * 100);
+
+    const paystackResponse = await axios.post(
+      'https://api.paystack.co/charge',
+      {
+        email: userEmail,
+        amount: amountInPesewas,
+        currency: 'GHS',
+        card: {
+          number: cardNumber.replace(/\s/g, ''),
+          cvv,
+          expiry_month: String(expiryMonth).trim(),
+          expiry_year: String(expiryYear).trim()
+        },
+        metadata: {
+          userId,
+          shippingMethod: shippingMethod || 'Ground',
+          items: items.map(i => i.productId),
+          selectedSamples: selectedSamples || []
+        }
+      },
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' } }
+    );
+
+    const { status, reference, display_text, url } = paystackResponse.data.data;
+
+    // Create pending orders immediately so we can update them on success/OTP verify
+    for (const item of items) {
+      await Order.create({
+        user: userId,
+        product: item.productId,
+        batch: item.batchId || '65ff5a5a1c2d3e4f5a6b7c8d',
+        quantity: item.quantity,
+        totalPrice: item.lineTotal,
+        depositStatus: status === 'success' ? 'Paid' : 'Pending',
+        orderStatus: 'Confirmed',
+        paymentReference: reference,
+        paymentChannel: 'card',
+        shippingAddress: shippingAddress || {},
+        shippingMethod: shippingMethod || 'Ground'
+      });
+    }
+
+    return res.status(200).json({ status, reference, display_text, url });
+  } catch (err) {
+    console.error('Card Charge Error:', err.response?.data || err.message);
+    const paystackMsg = err.response?.data?.message || err.response?.data?.data?.message;
+    const httpStatus = err.response ? 400 : 500;
+    res.status(httpStatus).json({ message: paystackMsg || err.message });
+  }
+};
+
+const chargeSubmitOtp = async (req, res) => {
+  try {
+    const { otp, reference } = req.body;
+    if (!otp || !reference) return res.status(400).json({ message: 'OTP and reference are required' });
+
+    const response = await axios.post(
+      'https://api.paystack.co/charge/submit_otp',
+      { otp, reference },
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}` } }
+    );
+
+    const { status, display_text, url } = response.data.data;
+
+    if (status === 'success') {
+      await Order.updateMany(
+        { paymentReference: reference },
+        { depositStatus: 'Paid' }
+      );
+      return res.status(200).json({ status: 'success', reference });
+    }
+
+    return res.status(200).json({ status, display_text, url });
+  } catch (err) {
+    console.error('Submit OTP Error:', err.response?.data || err.message);
+    res.status(500).json({ message: err.response?.data?.message || err.message });
+  }
+};
+
+const chargeMoMo = async (req, res) => {
+  try {
+    const { phone, provider, items, totalAmount, shippingAddress, shippingMethod, selectedSamples } = req.body;
+    const userEmail = req.user.email;
+    const userId = req.user.id;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'No items in order' });
+    }
+    if (!phone || !provider) {
+      return res.status(400).json({ message: 'Phone and provider are required' });
+    }
+
+    const amountInPesewas = Math.round(totalAmount * 100);
+
+    const paystackResponse = await axios.post(
+      'https://api.paystack.co/charge',
+      {
+        email: userEmail,
+        amount: amountInPesewas,
+        currency: 'GHS',
+        mobile_money: {
+          phone: phone.replace(/\s/g, ''),
+          provider // 'mtn' | 'vod' (Telecel) | 'tgo' (AirtelTigo)
+        },
+        metadata: {
+          userId,
+          shippingMethod: shippingMethod || 'Ground',
+          items: items.map(i => i.productId),
+          selectedSamples: selectedSamples || []
+        }
+      },
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' } }
+    );
+
+    const { status, reference, display_text } = paystackResponse.data.data;
+
+    // Create pending orders — they'll be marked Paid when webhook/verify fires
+    for (const item of items) {
+      await Order.create({
+        user: userId,
+        product: item.productId,
+        batch: item.batchId || '65ff5a5a1c2d3e4f5a6b7c8d',
+        quantity: item.quantity,
+        totalPrice: item.lineTotal,
+        depositStatus: 'Pending',
+        orderStatus: 'Confirmed',
+        paymentReference: reference,
+        paymentChannel: 'mobile_money',
+        shippingAddress: shippingAddress || {},
+        shippingMethod: shippingMethod || 'Ground'
+      });
+    }
+
+    return res.status(200).json({ status, reference, display_text });
+  } catch (err) {
+    console.error('MoMo Charge Error:', err.response?.data || err.message);
+    const paystackMsg = err.response?.data?.message || err.response?.data?.data?.message;
+    const httpStatus = err.response ? 400 : 500;
+    res.status(httpStatus).json({ message: paystackMsg || err.message });
+  }
+};
+
+module.exports = { getAdminOrders, getMyOrders, createOrder, checkMilestones, updateOrderStatus, verifyPayment, downloadReceipt, chargeCard, chargeSubmitOtp, chargeMoMo };

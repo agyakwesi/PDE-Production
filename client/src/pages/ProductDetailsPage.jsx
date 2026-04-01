@@ -12,6 +12,7 @@ const ProductDetailsPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +20,13 @@ const ProductDetailsPage = () => {
       try {
         const res = await fetch(`/api/products/${id}`);
         const data = await res.json();
-        setProduct(res.ok ? data : null);
+        if (res.ok) {
+          setProduct(data);
+          // Set default variant if available
+          if (data.variants && data.variants.length > 0) {
+            setSelectedVariant(data.variants[0]);
+          }
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,8 +39,8 @@ const ProductDetailsPage = () => {
   if (loading) return <div className="product-loading">Accessing Archives...</div>;
   if (!product) return <div className="product-not-found">Reference not found in vault.</div>;
 
-  const retailGHS = calculateRetailGHS(product.supplierCost);
-  const progress = calculateBatchProgress(product.batchTotal, 3000);
+  const currentSupplierCost = selectedVariant ? selectedVariant.supplierCost : product.supplierCost;
+  const retailGHS = calculateRetailGHS(currentSupplierCost);
 
   return (
     <div className="product-details-page">
@@ -66,15 +73,27 @@ const ProductDetailsPage = () => {
             {product.description}
           </p>
 
-          <div className="product-batch-card">
-            <div className="product-batch-header">
-              <span className="product-batch-label">Batch Status</span>
-              <span className="product-batch-value">{Math.round(progress)}%</span>
-            </div>
-            <div className="product-batch-bar-bg">
-              <div className="product-batch-bar-fill" style={{ width: `${progress}%` }} />
-            </div>
+          <div className="product-urgency-container">
+             <span className="product-urgency-text">Only 3 bottles remaining</span>
           </div>
+
+          {/* Size Variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="product-variants-section">
+              <span className="product-variants-label">Available Sizes</span>
+              <div className="product-variants-grid">
+                {product.variants.map((v, i) => (
+                  <button 
+                    key={i}
+                    className={`product-variant-btn ${selectedVariant?.size === v.size ? 'active' : ''}`}
+                    onClick={() => setSelectedVariant(v)}
+                  >
+                    {v.size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="product-action-container">
             <div style={{ flex: 1 }}>
@@ -87,16 +106,17 @@ const ProductDetailsPage = () => {
               className="product-action-btn"
               onClick={() => {
                 addToCart({
-                  productId: product.id,
+                  productId: product.id || product._id,
                   name: product.name,
                   brand: product.brand,
                   image: product.image,
-                  supplierCost: product.supplierCost,
+                  supplierCost: currentSupplierCost,
+                  size: selectedVariant ? selectedVariant.size : 'Standard',
                 });
                 navigate('/cart');
               }}
             >
-              Secure Allocation
+              Pre order
             </Button>
           </div>
 
